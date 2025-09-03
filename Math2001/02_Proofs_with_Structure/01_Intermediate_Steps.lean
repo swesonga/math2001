@@ -127,4 +127,29 @@ example {n : ℤ} (hn : n ^ 2 + 4 = 4 * n) : n = 2 := by
     n = 2 := by addarith [h2]
 
 example (x y : ℚ) (h : x * y = 1) (h2 : x ≥ 1) : y ≤ 1 := by
-  sorry
+  have h3 : 0 < x * y :=
+    calc
+      0 < 1 := by extra
+      _ = x * y := by rw [h]
+  cancel x at h3
+  have h4 : x - 1 ≥ 0 := by addarith [h2]
+  --have h5 : (x - 1) * y ≥ 0 := by extra
+  calc
+    y = x * y - (x - 1) * y := by ring
+    _ = 1 - (x - 1) * y := by rw [h]
+    _ ≤ 1 - 0 := by extra
+    _ = 1 := by ring
+/-
+fragments from various attempts
+    _ = y + 1 := by rw [h]
+    _ ≤ 0 + 1 := by rel [h3]
+    _ = 1 / x := by rw [h]
+    _ ≤ 1 := by rel [h3]
+-/
+/-
+    y = x * y / x := by ring
+    _ = y + x * y := by extra
+    _ = y + 1 := by rw [h]
+    _ ≤ 0 + 1 := by rel [h3]
+    _ = 1 := by ring
+-/
