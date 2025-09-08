@@ -181,7 +181,32 @@ example {a b : ℝ} (hab : a ^ 2 + 2 * b ^ 2 = 3 * a * b) : a = b ∨ a = 2 * b 
   sorry
 
 example {t : ℝ} (ht : t ^ 3 = t ^ 2) : t = 1 ∨ t = 0 := by
-  sorry
+  have h1 :=
+    calc
+      t ^ 3 - t ^ 2 = t ^ 3 - t ^ 3 := by rw [ht]
+      _ = 0 := by ring
+  -- cancel t at h1
+  /-
+  --Why doesn't this work?
+  have h2 :=
+    calc
+      t ^ 2 * (t - 1) = t ^ 3 - t ^ 2 := by ring
+  -/
+--  have h3: t ^ 2 * (t - 1) = t ^ 3 - t ^ 2 := by ring
+  have h3:=
+    calc
+     t ^ 2 * (t - 1) = t ^ 3 - t ^ 2 := by ring
+     _ = 0 := by rw [h1]
+  -- have h4: t ^ 2 * (t - 1) = 0 := by rw [h1]
+  have h5 := eq_zero_or_eq_zero_of_mul_eq_zero h3
+  obtain htz | ht1 := h5
+  · right
+    cancel 2 at htz
+  · left
+    calc
+      t = t - 1 + 1 := by ring
+      _ = 0 + 1 := by rw [ht1]
+      _ = 1 := by ring
 
 example {n : ℕ} : n ^ 2 ≠ 7 := by
   sorry
