@@ -137,11 +137,45 @@ example {a b : ℚ} (h : a + 2 * b < 0) : b < a / 2 ∨ b < - a / 2 := by
   calc
     b < -a / 2 := by addarith [h]
 
+/-
+I had to step back and try a different approach after frustration with
+not being able to show that y - 1 < y, which seems true for any real number y
+-/
 example {x y : ℝ} (h : y = 2 * x + 1) : x < y / 2 ∨ x > y / 2 := by
-  sorry
+  left
+  -- have h1 : x = (y - 1)/2 := by addarith [h]
+  -- have h2 : 0 < 1/2 := by numbers
+  -- have h3: y - 1 < y := by extra
+  have h4:=
+    calc
+     y = 2 * x + 1 := h
+     _ > 2 * x := by extra
+  calc
+    x < y / 2 := by addarith [h4]
+  /-
+    x = (y - 1)/2 := by addarith [h]
+--    _ = y/2 - 1/2 := by addarith [h]
+    _ < (y - 1 + 1)/2 := by numbers
+--    x = (y - 1)/2 := by addarith [h]
+--    _ = (2 * x + 1 - 1)/2 := by rw [h]
+  -/
 
 example {x : ℝ} (hx : x ^ 2 + 2 * x - 3 = 0) : x = -3 ∨ x = 1 := by
-  sorry
+  have h1 :=
+    calc (x + 3) * (x - 1) = x ^ 2 + 2 * x - 3 := by ring
+    _ = 0 := by rw [hx]
+  have h2 := eq_zero_or_eq_zero_of_mul_eq_zero h1
+  obtain hxl | hxr := h2
+  left
+  calc
+    x = x + 3 - 3 := by ring
+    _ = 0 - 3 := by rw [hxl]
+    _ = -3 := by ring
+  right
+  calc
+    x = x - 1 + 1 := by ring
+    _ = 0 + 1 := by rw [hxr]
+    _ = 1 := by ring
 
 example {a b : ℝ} (hab : a ^ 2 + 2 * b ^ 2 = 3 * a * b) : a = b ∨ a = 2 * b := by
   sorry
