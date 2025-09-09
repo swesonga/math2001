@@ -177,8 +177,33 @@ example {x : ℝ} (hx : x ^ 2 + 2 * x - 3 = 0) : x = -3 ∨ x = 1 := by
     _ = 0 + 1 := by rw [hxr]
     _ = 1 := by ring
 
+/-
+Don't know why it took me a while to see that a = b ∨ a = 2 * b is just saying
+a - b = 0 ∨ a - 2 * b = 0
+-/
 example {a b : ℝ} (hab : a ^ 2 + 2 * b ^ 2 = 3 * a * b) : a = b ∨ a = 2 * b := by
-  sorry
+/-
+  have h1: a ^ 2 + 2 * b ^ 2 - 3 * a * b = 0 := by addarith [hab]
+  --have h2: a ^ 2 + 2 * b ^ 2 ≥ 0 := by addarith [hab]
+  --have h3: a * b ≥ 0 := by addarith [hab]
+-/
+  have h1: a ^ 2 + 2 * b ^ 2 - 3 * a * b = 0 := by addarith [hab]
+  have h2 :=
+    calc
+      (a - b) * (a - 2 * b) = a ^ 2 + 2 * b ^ 2 - 3 * a * b := by ring
+      _ = 0 := by rw [h1]
+  have h := eq_zero_or_eq_zero_of_mul_eq_zero h2
+  obtain hl | hr := h
+  · left
+    calc
+      a = a - b + b := by ring
+      _ = 0 + b := by rw [hl]
+      _ = b := by ring
+  · right
+    calc
+      -- shorter than expanding it out as done for the left case above
+      a = 2 * b := by addarith [hr]
+
 
 example {t : ℝ} (ht : t ^ 3 = t ^ 2) : t = 1 ∨ t = 0 := by
   have h1 :=
@@ -209,13 +234,114 @@ example {t : ℝ} (ht : t ^ 3 = t ^ 2) : t = 1 ∨ t = 0 := by
       _ = 1 := by ring
 
 example {n : ℕ} : n ^ 2 ≠ 7 := by
-  sorry
+  have hn := le_or_succ_le n 2
+  obtain hn2 | hn3 := hn
+  apply ne_of_lt
+  calc
+    n^2 = n * n := by ring
+    _ ≤ 2 * 2 := by rel [hn2]
+    _ = 4 := by ring
+    _ < 7 := by numbers
+  apply ne_of_gt
+  calc
+    7 < 9 := by numbers
+    _ = 3 * 3 := by ring
+    _ ≤ n * n := by rel [hn3]
+    _ = n^2 := by ring
+  /-
+    -- why doesn't this work?
+    n^2 = n * n := by ring
+    _ ≤ 3 * 3 := by rel [hn2]
+    _ = 9 := by ring
+    _ > 7 := by numbers
+  -/
+
+/-
+example {x : ℤ} : 2 * x ≠ 3 := by
+  -- have h := le_or_succ_le (2 * x) 3
+  have h := le_or_succ_le (2 * x) 2
+  -- have hx := le_or_succ_le x 1
+  obtain hle | hgt := h
+  · apply ne_of_lt
+/-
+    have h1 :=
+      calc
+        x = 2 * x - x := by ring
+        _ ≤ 3 - x := by rel [hle]
+-/
+    calc
+      2 * x ≤ 2 := hle
+      _ < 3 := by numbers
+  · apply ne_of_gt
+/-
+    have hx := le_or_succ_le x 1
+    · obtain hxl | hxr := hx
+      · calc
+          3 ≤ 2 * x := hgt
+          _ ≤ 2 * 1 := by rel [hxl]
+          _ = 2 := by ring
+-/
+-/
 
 example {x : ℤ} : 2 * x ≠ 3 := by
-  sorry
+  have hx := le_or_succ_le x 1
+  obtain hle | hgt := hx
+  · apply ne_of_lt
+    calc
+      2 * x = x + x := by ring
+      _ ≤ 1 + 1 := by rel [hle]
+      _ = 2 := by ring
+      _ < 3 := by numbers
+    /-
+      x = 2 * x - x := by ring
+      _ ≤ 2 * 1 - 1 := by rel [hle]
+      -- 2 * x ≤ 2 := by addarith [hle]
+      _ < 3 := by numbers
+    -/
+  · apply ne_of_gt
+    -- have h: 2 * 2 ≤ 2 * x := by addarith [hgt]
+    have h: 2 * 2 ≤ 2 * x := by rel [hgt]
+    /-
+    Why does this calc block fail while being similar to hypothesis h above?
+    calc
+      3 < 4 := by numbers
+      _ = 2 * 2 := by ring
+      _ ≤ 2 * x := by rel [hgt]
+    -/
+    calc
+      4 = 2 * 2 := by ring
+      _ ≤ 2 * x := by rel [h]
+    /-
+    -- alternatively:
+    calc
+      2 * x ≥ 2 * 2 := by rel [h]
+      _ = 4 := by ring
+    -/
 
 example {t : ℤ} : 5 * t ≠ 18 := by
-  sorry
+  have ht := le_or_succ_le t 3
+  obtain htle3 | h4let := ht
+  · apply ne_of_lt
+    calc
+      5 * t ≤ 5 * 3 := by rel [htle3]
+      _ = 15 := by ring
+      _ < 18 := by numbers
+  · apply ne_of_gt
+    calc
+      5 * t ≥ 5 * 4 := by rel [h4let]
+      _ = 20 := by ring
+      _ > 18 := by numbers
 
 example {m : ℕ} : m ^ 2 + 4 * m ≠ 46 := by
-  sorry
+  have hm := le_or_succ_le m 5
+  obtain hmle5 | h6lem := hm
+  · apply ne_of_lt
+    calc
+      m^2 + 4 * m ≤ 5^2 + 4 * 5 := by rel [hmle5]
+      _ = 45 := by ring
+      _ < 46 := by numbers
+  · apply ne_of_gt
+    calc
+      m^2 + 4 * m ≥ 6^2 + 4 * 6 := by rel [h6lem]
+      _ = 60 := by ring
+      _ > 46 := by numbers
