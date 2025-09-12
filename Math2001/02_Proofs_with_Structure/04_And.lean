@@ -20,7 +20,10 @@ example {p : ℚ} (hp : p ^ 2 ≤ 8) : p ≥ -5 := by
       p ^ 2 ≤ 9 := by addarith [hp]
       _ = 3 ^ 2 := by numbers
     numbers
-  sorry
+  obtain ⟨h1, h2⟩ := hp'
+  calc
+    p ≥ -3 := h1
+    _ ≥ -5 := by numbers -- can't use _ > -5 here since it doesn't match the goal
 
 example {a b : ℝ} (h1 : a - 5 * b = 4) (h2 : b + 2 = 3) : a = 9 ∧ b = 1 := by
   constructor
@@ -49,7 +52,20 @@ example {a b : ℝ} (h1 : a ^ 2 + b ^ 2 = 0) : a = 0 ∧ b = 0 := by
       a ^ 2 ≤ a ^ 2 + b ^ 2 := by extra
       _ = 0 := by rw [h1]
     extra
-  sorry
+  cancel 2 at h2
+  constructor
+  · apply h2
+  have h3: b ^ 2 = 0
+  · apply le_antisymm
+    · calc
+        b^2 ≤ a^2 + b^2 := by extra
+        _ = 0 := by rw [h1]
+    · calc
+        0 ≤ b^2 := by extra
+        _ ≤ a^2 + b^2 := by extra
+        _ = 0^2 + b^2 := by rw [h2]
+        _ = b^2 := by ring
+  cancel 2 at h3
 
 /-! # Exercises -/
 
