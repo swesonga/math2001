@@ -71,22 +71,71 @@ example {a b : ℝ} (h1 : a ^ 2 + b ^ 2 = 0) : a = 0 ∧ b = 0 := by
 
 
 example {a b : ℚ} (H : a ≤ 1 ∧ a + b ≤ 3) : 2 * a + b ≤ 4 := by
-  sorry
+  obtain ⟨ h1, h2 ⟩ := H
+  /- not necessary
+  have ht : 2 * a ≤ 2 :=
+  calc
+    2 * a = a + a := by ring
+    _ ≤ 1 + 1 := by rel [h1]
+    _ = 2 := by ring
+  -/
+  calc
+    2 * a + b = a + a + b := by ring
+    _ ≤ 1 + a + b := by rel [h1]
+    _ = 1 + (a + b) := by ring
+    _ ≤ 1 + 3 := by rel [h2]
+    _ = 4 := by ring
 
 example {r s : ℝ} (H : r + s ≤ 1 ∧ r - s ≤ 5) : 2 * r ≤ 6 := by
-  sorry
+  obtain ⟨ h1, h2 ⟩ := H
+  calc
+    2 * r = r + r := by ring
+    _ = r + s + (r - s) := by ring
+    _ ≤ 1 + (r - s) := by rel [h1]
+    _ ≤ 1 + 5 := by rel [h2]
+    _ = 6 := by ring
 
 example {m n : ℤ} (H : n ≤ 8 ∧ m + 5 ≤ n) : m ≤ 3 := by
-  sorry
+  obtain ⟨ h1, h2 ⟩ := H
+  have ht : m ≤ n - 5 := by addarith [h2]
+  calc
+    m ≤ n - 5 := ht
+    _ ≤ 8 - 5 := by rel [h1]
+    _ = 3 := by ring
 
 example {p : ℤ} (hp : p + 2 ≥ 9) : p ^ 2 ≥ 49 ∧ 7 ≤ p := by
-  sorry
+  have ht : p ≥ 7 := by addarith [hp]
+  constructor
+  calc
+    p^2 = p * p := by ring
+    _ ≥ 7 * 7 := by rel [ht]
+    _ = 49 := by ring
+  apply ht
 
 example {a : ℚ} (h : a - 1 ≥ 5) : a ≥ 6 ∧ 3 * a ≥ 10 := by
-  sorry
+  have ht : a ≥ 6 := by addarith [h]
+  constructor
+  apply ht
+  calc
+    3 * a = a + a + a := by ring
+    _ ≥ 6 + 6 + 6 := by rel [ht]
+    _ = 18 := by ring
+    _ ≥ 10 := by numbers
 
 example {x y : ℚ} (h : x + y = 5 ∧ x + 2 * y = 7) : x = 3 ∧ y = 2 := by
-  sorry
+  obtain ⟨ h1, h2 ⟩ := h
+  have h3 : x = 5 - y := by addarith [h1]
+  have h4 : y = 5 - x := by addarith [h1]
+  have hy := calc
+    y = x + 2 * y - (x + y) := by ring
+    _ = 7 - 5 := by rw [h1, h2]
+    _ = 2 := by ring
+  constructor
+  calc
+    x = 5 - y := h3
+    _ = 5 - 2 := by rw [hy]
+    _ = 3 := by ring
+  apply hy
 
 example {a b : ℝ} (h1 : a * b = a) (h2 : a * b = b) :
     a = 0 ∧ b = 0 ∨ a = 1 ∧ b = 1 := by
