@@ -34,13 +34,22 @@ example (x : ℝ) : ∃ y : ℝ, y > x := by
 
 
 example : ∃ m n : ℤ, m ^ 2 - n ^ 2 = 11 := by
-  sorry
+  use 6,5
+  ring
 
 example (a : ℤ) : ∃ m n : ℤ, m ^ 2 - n ^ 2 = 2 * a + 1 := by
-  sorry
+  use a+1, a
+  ring
 
 example {p q : ℝ} (h : p < q) : ∃ x, p < x ∧ x < q := by
-  sorry
+  use (p + q)/2
+  constructor
+  calc
+    p = (p + p)/2 := by ring
+    _ < (p + q)/2 := by rel [h]
+  calc
+    (p + q)/2 < (q + q)/2 := by rel [h]
+    _ = q := by ring
 
 example : ∃ a b c d : ℕ,
     a ^ 3 + b ^ 3 = 1729 ∧ c ^ 3 + d ^ 3 = 1729 ∧ a ≠ c ∧ a ≠ d := by
