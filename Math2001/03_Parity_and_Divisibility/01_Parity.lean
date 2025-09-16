@@ -227,6 +227,94 @@ example (n : ℤ) : Odd (3 * n ^ 2 + 3 * n - 1) := by
     apply ht
 
 example (n : ℤ) : ∃ m ≥ n, Odd m := by
-  sorry
+  obtain hn | hn := Int.even_or_odd n -- switch on whether n is odd or even
+  · dsimp [Odd, Even] at *
+    obtain ⟨k, hn'⟩ := hn
+    use 2 * k + 1
+    constructor
+    calc
+      2 * k + 1 ≥ 2 * k := by extra
+      _ = n := by rw [hn']
+    use k
+    /-
+    have ht := calc
+      2 * k + 1 = 2 * k + 1 := by ring
+    -/
+    ring
+  · dsimp [Odd] at *
+    use n
+    constructor
+    extra
+    obtain ⟨k, hn'⟩ := hn
+    use k
+    apply hn'
+
 example (a b c : ℤ) : Even (a - b) ∨ Even (a + c) ∨ Even (b - c) := by
-  sorry
+  obtain ha | ha := Int.even_or_odd a
+  obtain hb | hb := Int.even_or_odd b
+  -- Even a ∧ Even b
+  · left
+    dsimp [Even] at *
+    obtain ⟨ka, ha'⟩ := ha
+    obtain ⟨kb, hb'⟩ := hb
+    have ht := calc
+      a - b = 2 * ka - 2 * kb := by rw [ha', hb']
+      _ = 2 * (ka - kb) := by ring
+    use ka - kb
+    apply ht
+  -- Even a ∧ Odd b
+  · obtain hc | hc := Int.even_or_odd c
+    -- Even a ∧ Odd b ∧ Even c
+    · right
+      left
+      dsimp [Even] at *
+      obtain ⟨ka, ha'⟩ := ha
+      obtain ⟨kc, hc'⟩ := hc
+      use ka + kc
+      calc
+        a + c = 2 * ka + 2 * kc := by rw [ha', hc']
+        _ = 2 * (ka + kc) := by ring
+    -- Even a ∧ Odd b ∧ Odd c
+    · right
+      right
+      dsimp [Even, Odd] at *
+      obtain ⟨kb, hb'⟩ := hb
+      obtain ⟨kc, hc'⟩ := hc
+      have ht :=
+        calc
+          b - c = 2 * kb + 1 - (2 * kc + 1) := by rw [hb', hc']
+          _ = 2 * (kb - kc) := by ring
+      use kb - kc
+      apply ht
+  -- Odd a
+  · obtain hb | hb := Int.even_or_odd b
+    -- Odd a ∧ Even b
+    · right
+      obtain hc | hc := Int.even_or_odd c
+      -- Odd a ∧ Even b ∧ Even c
+      · right
+        dsimp [Even] at *
+        obtain ⟨kc, hc'⟩ := hc
+        obtain ⟨kb, hb'⟩ := hb
+        use kb - kc
+        calc
+          b - c = 2 * kb - 2 * kc := by rw [hb', hc']
+          _ = 2 * (kb - kc) := by ring
+      -- Odd a ∧ Even b ∧ Odd c
+      · left
+        dsimp [Even, Odd] at *
+        obtain ⟨ka, ha'⟩ := ha
+        obtain ⟨kc, hc'⟩ := hc
+        use ka + kc + 1
+        calc
+          a + c = (2 * ka + 1) + (2 * kc + 1) := by rw [ha', hc']
+          _ = 2 * (ka + kc + 1) := by ring
+    -- Odd a ∧ Odd b
+    · left
+      dsimp [Even, Odd] at *
+      obtain ⟨ka, ha'⟩ := ha
+      obtain ⟨kb, hb'⟩ := hb
+      use ka - kb
+      calc
+        a - b = (2 * ka + 1) - (2 * kb + 1) := by rw [hb', ha']
+        _ = 2 * (ka - kb) := by ring
