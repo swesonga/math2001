@@ -232,22 +232,22 @@ example (n : ℤ) : ∃ m ≥ n, Odd m := by
     obtain ⟨k, hn'⟩ := hn
     use 2 * k + 1
     constructor
-    calc
-      2 * k + 1 ≥ 2 * k := by extra
-      _ = n := by rw [hn']
-    use k
-    /-
-    have ht := calc
-      2 * k + 1 = 2 * k + 1 := by ring
-    -/
-    ring
+    · calc
+        2 * k + 1 ≥ 2 * k := by extra
+        _ = n := by rw [hn']
+    · use k
+      /-
+      have ht := calc
+        2 * k + 1 = 2 * k + 1 := by ring
+      -/
+      ring
   · dsimp [Odd] at *
     use n
     constructor
-    extra
-    obtain ⟨k, hn'⟩ := hn
-    use k
-    apply hn'
+    · extra
+    · obtain ⟨k, hn'⟩ := hn
+      use k
+      apply hn'
 
 example (a b c : ℤ) : Even (a - b) ∨ Even (a + c) ∨ Even (b - c) := by
   obtain ha | ha := Int.even_or_odd a
