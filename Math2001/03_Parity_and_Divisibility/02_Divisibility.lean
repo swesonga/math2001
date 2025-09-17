@@ -76,28 +76,81 @@ example {a b : ℕ} (hab : a ∣ b) (hb : 0 < b) : 0 < a := by
 
 
 example (t : ℤ) : t ∣ 0 := by
-  sorry
+  dsimp [(· ∣ ·)]
+  use 0
+  calc
+    0 = t * 0 := by ring
 
 example : ¬(3 : ℤ) ∣ -10 := by
-  sorry
+  dsimp [(· ∣ ·)]
+  apply Int.not_dvd_of_exists_lt_and_lt
+  use -4
+  constructor
+  · numbers
+  · numbers
 
 example {x y : ℤ} (h : x ∣ y) : x ∣ 3 * y - 4 * y ^ 2 := by
-  sorry
+  obtain ⟨k, hxy⟩ := h
+  dsimp [(· ∣ · )]
+  have ht := calc
+    3 * y - 4 * y ^ 2 = 3 * (x * k) - 4 * (x * k)^2 := by rw [hxy]
+    _ = x * (3 * k - 4 * x * k^2) := by ring
+  use 3 * k - 4 * x * k^2
+  apply ht
 
 example {m n : ℤ} (h : m ∣ n) : m ∣ 2 * n ^ 3 + n := by
-  sorry
+  obtain ⟨k, hmn⟩ := h
+  dsimp [(· ∣ · )]
+  have ht := calc
+    2 * n ^ 3 + n = 2 * (m * k) ^ 3 + m * k := by rw [hmn]
+    _ = m * (2 * m^2 * k^3 + k) := by ring
+  use 2 * m^2 * k^3 + k
+  apply ht
 
 example {a b : ℤ} (hab : a ∣ b) : a ∣ 2 * b ^ 3 - b ^ 2 + 3 * b := by
-  sorry
+  obtain ⟨k, hab'⟩ := hab
+  dsimp [(· ∣ · )]
+  have ht := calc
+    2 * b ^ 3 - b ^ 2 + 3 * b = 2 * (a * k) ^ 3 - (a * k) ^ 2 + 3 * (a * k) := by rw [hab']
+    _ = a * (2 * a ^ 2 * k ^ 3 - a * k ^ 2 + 3 * k) := by ring
+  use 2 * a ^ 2 * k ^ 3 - a * k ^ 2 + 3 * k
+  apply ht
 
 example {k l m : ℤ} (h1 : k ∣ l) (h2 : l ^ 3 ∣ m) : k ^ 3 ∣ m := by
-  sorry
+  obtain ⟨k1, hkl⟩ := h1
+  obtain ⟨k2, hlm⟩ := h2
+  dsimp [(· ∣ · )]
+  have ht := calc
+    m = l ^ 3 * k2 := hlm
+    _ = (k * k1) ^ 3 * k2 := by rw [hkl]
+    _ = k ^ 3 * (k1 ^ 3 * k2) := by ring
+  use k1 ^ 3 * k2
+  apply ht
 
 example {p q r : ℤ} (hpq : p ^ 3 ∣ q) (hqr : q ^ 2 ∣ r) : p ^ 6 ∣ r := by
-  sorry
+  obtain ⟨k1, hpq'⟩ := hpq
+  obtain ⟨k2, hqr'⟩ := hqr
+  have ht := calc
+    r = q ^ 2 * k2 := hqr'
+    _ = (p ^ 3 * k1) ^ 2 * k2 := by rw [hpq']
+    _ = p ^ 6 * (k1 ^ 2 * k2) := by ring
+  use k1 ^ 2 * k2
+  apply ht
 
 example : ∃ n : ℕ, 0 < n ∧ 9 ∣ 2 ^ n - 1 := by
-  sorry
+  use 6
+  constructor
+  · numbers
+  · dsimp [(· ∣ · )]
+    use 7
+    numbers
 
 example : ∃ a b : ℤ, 0 < b ∧ b < a ∧ a - b ∣ a + b := by
-  sorry
+  use 5, 3
+  constructor
+  · numbers
+  · constructor
+    · numbers
+    · dsimp [(· ∣ · )]
+      use 4
+      numbers
