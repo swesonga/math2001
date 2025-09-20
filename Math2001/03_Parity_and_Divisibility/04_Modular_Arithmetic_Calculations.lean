@@ -45,12 +45,56 @@ example {x : ℤ} : x ^ 3 ≡ x [ZMOD 3] := by
 /-! # Exercises -/
 
 
-example {n : ℤ} (hn : n ≡ 1 [ZMOD 3]) : n ^ 3 + 7 * n ≡ 2 [ZMOD 3] :=
-  sorry
+-- I used the ChatGPT prompt "factor n^3-1"
+example {n : ℤ} (hn : n ≡ 1 [ZMOD 3]) : n ^ 3 + 7 * n ≡ 2 [ZMOD 3] := by
+  /-
+  --apply Int.ModEq.pow_three
+  obtain ⟨k, hn'⟩ := hn
+  have ht : n ^ 3 ≡ 1 [ZMOD 3] := by
+    dsimp [Int.ModEq] at *
+    -- apply Int.ModEq.pow_three
+    /-
+    calc
+      n ^ 3 - 1 = (n - 1) * (n ^ 2 + n + 1) := by ring
+      _ = 3 * k * (n ^ 2 + n + 1) := by rw [hn']
+    -/
+    -- calc block above gives us value to use
+    use k * (n ^ 2 + n + 1)
+    calc
+      n ^ 3 - 1 = (n - 1) * (n ^ 2 + n + 1) := by ring
+      _ = 3 * k * (n ^ 2 + n + 1) := by rw [hn']
+  have ht2 : 7 * n ≡ 1 [ZMOD 3] := by
+  -/
+  dsimp [Int.ModEq] at *
+  dsimp [(· ∣ .)] at *
+  obtain ⟨k, hn'⟩ := hn
+  --have ht : 3 | 7 * n - 1 := by
+  /-
+  calc
+    7 * n - 1 = 7 * (n - 1) + 6 := by ring
+  -/
+  use (k * (n ^ 2 + n + 1)) + (7 * k + 2)
+  calc
+    n ^ 3 + 7 * n - 2 = (n ^ 3 - 1) + (7 * n - 1) := by ring
+    _ = (n - 1) * (n ^ 2 + n + 1) + 7 * (n - 1) + 6 := by ring
+    _ = 3 * k * (n ^ 2 + n + 1) + 7 * (3 * k) + 6 := by rw [hn']
+    _ = 3 * (k * (n ^ 2 + n + 1) + 7 * k + 2) := by ring
+  ring
 
 example {a : ℤ} (ha : a ≡ 3 [ZMOD 4]) :
-    a ^ 3 + 4 * a ^ 2 + 2 ≡ 1 [ZMOD 4] :=
-  sorry
+    a ^ 3 + 4 * a ^ 2 + 2 ≡ 1 [ZMOD 4] := by
+  obtain ⟨k, ha'⟩ := ha
+  have ht1 : a = 4 * k + 3 := by addarith [ha']
+  have ht := calc
+    a ^ 3 + 4 * a ^ 2 + 2 = (4 * k + 3) ^ 3 + 4 * (4 * k + 3) ^ 2 + 2 := by rw [ht1]
+    -- used chatgpt.com to expand this. it used the binomial expansion formula (a+b)^3 = a^3+3a^2b+3ab^2+b^3
+    _ = (64 * k ^ 3 + 144 * k ^ 2 + 108 * k + 27) + 4 * (16 * k ^ 2 + 24 * k + 9) + 2 := by ring
+    _ = 64 * k ^ 3 + 208 * k ^ 2 + 204 * k + 65 := by ring
+    _ = 4 * (16 * k ^ 3 + 52 * k ^ 2 + 51 * k + 16) + 1 := by ring
+  use 16 * k ^ 3 + 52 * k ^ 2 + 51 * k + 16
+  calc
+    a ^ 3 + 4 * a ^ 2 + 2 - 1 = 4 * (16 * k ^ 3 + 52 * k ^ 2 + 51 * k + 16) + 1 - 1 := by rw [ht]
+    _ = 4 * (16 * k ^ 3 + 52 * k ^ 2 + 51 * k + 16) := by ring
 
 example (a b : ℤ) : (a + b) ^ 3 ≡ a ^ 3 + b ^ 3 [ZMOD 3] :=
   sorry
