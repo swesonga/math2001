@@ -134,7 +134,7 @@ example (n : ℤ) : 5 * n ^ 2 + 3 * n + 7 ≡ 1 [ZMOD 2] := by
     apply ht2
 
 /-
-Find a shorter proof of this
+See shorter proof of this in the next example (line 196)
 -/
 example {x : ℤ} : x ^ 5 ≡ x [ZMOD 5] := by
   mod_cases h : x % 5
@@ -189,3 +189,38 @@ example {x : ℤ} : x ^ 5 ≡ x [ZMOD 5] := by
       _ = 5 * (625 * k ^ 5 + 2500 * k^4 + 4000 * k^3 + 3200 * k^2 + 1279 * k + 204) := by ring
     use 625 * k ^ 5 + 2500 * k^4 + 4000 * k^3 + 3200 * k^2 + 1279 * k + 204
     apply ht2
+
+/-
+Shorter proof of last example above
+-/
+example {x : ℤ} : x ^ 5 ≡ x [ZMOD 5] := by
+  mod_cases hx : x % 5
+  calc
+    x ^ 5 ≡ 0 ^ 5 [ZMOD 5] := by rel [hx]
+    _ = 0 := by numbers
+    _ ≡ x [ZMOD 5] := by rel [hx]
+  calc
+    x ^ 5 ≡ 1 ^ 5 [ZMOD 5] := by rel [hx]
+    _ = 1 := by numbers
+    _ ≡ x [ZMOD 5] := by rel [hx]
+  calc
+    x ^ 5 ≡ 2 ^ 5 [ZMOD 5] := by rel [hx]
+    _ = 32 := by numbers
+    _ ≡ 2 [ZMOD 5] := by
+      use 6
+      numbers
+    _ ≡ x [ZMOD 5] := by rel [hx]
+  calc
+    x ^ 5 ≡ 3 ^ 5 [ZMOD 5] := by rel [hx]
+    _ = 243 := by numbers
+    _ ≡ 3 [ZMOD 5] := by
+      use 48
+      numbers
+    _ ≡ x [ZMOD 5] := by rel [hx]
+  calc
+    x ^ 5 ≡ 4 ^ 5 [ZMOD 5] := by rel [hx]
+    _ = 1024 := by numbers
+    _ ≡ 4 [ZMOD 5] := by
+      use 204
+      numbers
+    _ ≡ x [ZMOD 5] := by rel [hx]
