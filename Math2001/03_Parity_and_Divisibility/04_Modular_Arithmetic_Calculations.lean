@@ -133,5 +133,59 @@ example (n : ℤ) : 5 * n ^ 2 + 3 * n + 7 ≡ 1 [ZMOD 2] := by
     use (10 * k ^ 2 + 13 * k + 7)
     apply ht2
 
+/-
+Find a shorter proof of this
+-/
 example {x : ℤ} : x ^ 5 ≡ x [ZMOD 5] := by
-  sorry
+  mod_cases h : x % 5
+  /-
+  dsimp [Int.ModEq] at *
+  dsimp [(· ∣ · )] at *
+  apply Int.ModEq.pow_three
+  -/
+  · obtain ⟨k, hx⟩ := h
+    have ht : x = 5 * k := by addarith [hx]
+    have ht2 := calc
+      x ^ 5 = (5 * k) ^ 5 := by rw [ht]
+      _ = 5 * 5 ^ 4 * k ^ 5 := by ring
+    dsimp [Int.ModEq] at *
+    use 5 ^ 4 * k ^ 5 - k
+    calc
+      x ^ 5 - x = (5 * 5 ^ 4 * k ^ 5) - (5 * k) := by rw [ht2, ht]
+      _ = 5 * (5 ^ 4 * k ^ 5 - k) := by ring
+  · obtain ⟨k, hx⟩ := h
+    have ht : x = 5 * k + 1 := by addarith [hx]
+    have ht2 := calc
+      x ^ 5 - x = (5 * k + 1) ^ 5 - (5 * k + 1):= by rw [ht]
+      -- use binomial theorem
+      _ = 3125 * k ^ 5 + 3125 * k^4 + 1250 * k^3 + 250 * k^2 + 25 * k + 1 - (5 * k + 1) := by ring
+      _ = 5 * (625 * k ^ 5 + 625 * k^4 + 250 * k^3 + 50 * k^2 + 4 * k) := by ring
+    use 625 * k ^ 5 + 625 * k^4 + 250 * k^3 + 50 * k^2 + 4 * k
+    apply ht2
+  · obtain ⟨k, hx⟩ := h
+    have ht : x = 5 * k + 2 := by addarith [hx]
+    have ht2 := calc
+      x ^ 5 - x = (5 * k + 2) ^ 5 - (5 * k + 2):= by rw [ht]
+      -- use binomial theorem. chatgpt did not expand this correctly the first time
+      _ = 3125 * k ^ 5 + 6250 * k^4 + 5000 * k^3 + 2000 * k^2 + 400 * k + 32 - (5 * k + 2) := by ring
+      _ = 5 * (625 * k ^ 5 + 1250 * k^4 + 1000 * k^3 + 400 * k^2 + 79 * k + 6) := by ring
+    use 625 * k ^ 5 + 1250 * k^4 + 1000 * k^3 + 400 * k^2 + 79 * k + 6
+    apply ht2
+  · obtain ⟨k, hx⟩ := h
+    have ht : x = 5 * k + 3 := by addarith [hx]
+    have ht2 := calc
+      x ^ 5 - x = (5 * k + 3) ^ 5 - (5 * k + 3):= by rw [ht]
+      -- use binomial theorem
+      _ = 3125 * k ^ 5 + 9375 * k^4 + 11250 * k^3 + 6750 * k^2 + 2025 * k + 243 - (5 * k + 3) := by ring
+      _ = 5 * (625 * k ^ 5 + 1875 * k^4 + 2250 * k^3 + 1350 * k^2 + 404 * k + 48) := by ring
+    use 625 * k ^ 5 + 1875 * k^4 + 2250 * k^3 + 1350 * k^2 + 404 * k + 48
+    apply ht2
+  · obtain ⟨k, hx⟩ := h
+    have ht : x = 5 * k + 4 := by addarith [hx]
+    have ht2 := calc
+      x ^ 5 - x = (5 * k + 4) ^ 5 - (5 * k + 4):= by rw [ht]
+      -- use binomial theorem
+      _ = 3125 * k ^ 5 + 12500 * k^4 + 20000 * k^3 + 16000 * k^2 + 6400 * k + 1024 - (5 * k + 4) := by ring
+      _ = 5 * (625 * k ^ 5 + 2500 * k^4 + 4000 * k^3 + 3200 * k^2 + 1279 * k + 204) := by ring
+    use 625 * k ^ 5 + 2500 * k^4 + 4000 * k^3 + 3200 * k^2 + 1279 * k + 204
+    apply ht2
