@@ -96,17 +96,42 @@ example {a : ℤ} (ha : a ≡ 3 [ZMOD 4]) :
     a ^ 3 + 4 * a ^ 2 + 2 - 1 = 4 * (16 * k ^ 3 + 52 * k ^ 2 + 51 * k + 16) + 1 - 1 := by rw [ht]
     _ = 4 * (16 * k ^ 3 + 52 * k ^ 2 + 51 * k + 16) := by ring
 
-example (a b : ℤ) : (a + b) ^ 3 ≡ a ^ 3 + b ^ 3 [ZMOD 3] :=
-  sorry
+example (a b : ℤ) : (a + b) ^ 3 ≡ a ^ 3 + b ^ 3 [ZMOD 3] := by
+  have ht: (a + b) ^ 3 = a ^ 3 + 3 * a ^ 2 * b + 3 * a * b ^ 2 + b ^ 3 := by ring
+  use a ^ 2 * b + a * b ^ 2
+  calc
+    (a + b) ^ 3 - (a ^ 3 + b ^ 3) =
+      a ^ 3 + 3 * a ^ 2 * b + 3 * a * b ^ 2 + b ^ 3 - (a ^ 3 + b ^ 3) := by ring
+    _ = 3 * a ^ 2 * b + 3 * a * b ^ 2 := by ring
+    _ = 3 * (a ^ 2 * b + a * b ^ 2) := by ring
 
 example : ∃ a : ℤ, 4 * a ≡ 1 [ZMOD 7] := by
-  sorry
+  use 9
+  use 5
+  numbers
 
 example : ∃ k : ℤ, 5 * k ≡ 6 [ZMOD 8] := by
-  sorry
+  use 6
+  use 3
+  numbers
 
 example (n : ℤ) : 5 * n ^ 2 + 3 * n + 7 ≡ 1 [ZMOD 2] := by
-  sorry
+  mod_cases h : n % 2
+  · obtain ⟨k, hn⟩ := h
+    have ht : n = 2 * k := by addarith [hn]
+    have ht2 := calc
+      5 * n ^ 2 + 3 * n + 7 - 1 = 5 * (2 * k) ^ 2 + 3 * (2 * k) + 7 - 1:= by rw [ht]
+      _ = 2 * (10 * k ^ 2 + 3 * k + 3) := by ring
+    use (10 * k ^ 2 + 3 * k + 3)
+    apply ht2
+  · obtain ⟨k, hn⟩ := h
+    have ht : n = 2 * k + 1 := by addarith [hn]
+    have ht2 := calc
+      5 * n ^ 2 + 3 * n + 7 - 1 = 5 * (2 * k + 1) ^ 2 + 3 * (2 * k + 1) + 7 - 1 := by rw [ht]
+      _ = 5 * (4 * k ^ 2 + 4 * k + 1) + 6 * k + 3 + 6 := by ring
+      _ = 2 * (10 * k ^ 2 + 13 * k + 7) := by ring
+    use (10 * k ^ 2 + 13 * k + 7)
+    apply ht2
 
 example {x : ℤ} : x ^ 5 ≡ x [ZMOD 5] := by
   sorry
