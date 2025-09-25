@@ -45,15 +45,53 @@ example {m : ℤ} (h1 : 8 ∣ m) (h2 : 5 ∣ m) : 40 ∣ m := by
 
 /-! # Exercises -/
 
-
+/-
+saw these solutions right away after finishing the section 4.1
+exercises. Most likely solving 4.1.10. Exercise #2 made this easy
+-/
 example {n : ℤ} (hn : 6 ∣ 11 * n) : 6 ∣ n := by
-  sorry
+  obtain ⟨k, h⟩ := hn
+  dsimp [(· ∣ · )]
+  /-
+  have ht := calc
+    n = 2 * (3 * n) - 5 * n := by ring
+  -/
+  have h1 := calc
+    n = 12 * n - 11 * n := by ring
+    _ = 12 * n - 6 * k := by rw [h]
+    _ = 6 * (2 * n - k) := by ring
+  use 2 * n - k
+  apply h1
 
 example {a : ℤ} (ha : 7 ∣ 5 * a) : 7 ∣ a := by
-  sorry
+  obtain ⟨ k, ha'⟩ := ha
+  dsimp [(· ∣ · )]
+  have h1 := calc
+    a = 15 * a - 14 * a := by ring
+    _ = 3 * (5 * a) - 14 * a := by ring
+    _ = 3 * (7 * k) - 14 * a := by rw [ha']
+    _ = 7 * (3 * k - 2 * a) := by ring
+  use 3 * k - 2 * a
+  apply h1
 
 example {n : ℤ} (h1 : 7 ∣ n) (h2 : 9 ∣ n) : 63 ∣ n := by
-  sorry
+  obtain ⟨k7, h7⟩ := h1
+  obtain ⟨k9, h9⟩ := h2
+  have ht := calc
+    n = 28 * n - 27 * n := by ring
+    _ = 28 * (9 * k9) - 27 * n := by rw [h9]
+    _ = 28 * (9 * k9) - 27 * (7 * k7) := by rw [h7]
+    _ = 63 * (4 * k9 - 3 * k7) := by ring
+  use 4 * k9 - 3 * k7
+  apply ht
 
 example {n : ℤ} (h1 : 5 ∣ n) (h2 : 13 ∣ n) : 65 ∣ n := by
-  sorry
+  obtain ⟨k5, h5⟩ := h1
+  obtain ⟨k13, h13⟩ := h2
+  have ht := calc
+    n = 26 * n - 25 * n := by ring
+    _ = 26 * (5 * k5) - 25 * n := by rw [h5]
+    _ = 26 * (5 * k5) - 25 * (13 * k13) := by rw [h13]
+    _ = 65 * (2 * k5 - 5 * k13) := by ring
+  use 2 * k5 - 5 * k13
+  apply ht
