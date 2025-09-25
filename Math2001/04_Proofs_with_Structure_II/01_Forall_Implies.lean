@@ -126,13 +126,17 @@ example : ¬ Prime 6 := by
 
 
 example {a : ℚ} (h : ∀ b : ℚ, a ≥ -3 + 4 * b - b ^ 2) : a ≥ 1 :=
-  sorry
+  calc
+    a ≥ -3 + 4 * (2) - 2 ^ 2 := by apply h
+    _ = 1 := by ring
 
 example {n : ℤ} (hn : ∀ m, 1 ≤ m → m ≤ 5 → m ∣ n) : 15 ∣ n := by
   sorry
 
 example : ∃ n : ℕ, ∀ m : ℕ, n ≤ m := by
-  sorry
+  use 0
+  intro m
+  extra
 
 example : ∃ a : ℝ, ∀ b : ℝ, ∃ c : ℝ, a + b < c := by
   sorry
