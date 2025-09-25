@@ -131,7 +131,46 @@ example {a : ℚ} (h : ∀ b : ℚ, a ≥ -3 + 4 * b - b ^ 2) : a ≥ 1 :=
     _ = 1 := by ring
 
 example {n : ℤ} (hn : ∀ m, 1 ≤ m → m ≤ 5 → m ∣ n) : 15 ∣ n := by
-  sorry
+  /-
+  have h1 : 1 ≤ 3 := by numbers
+  have h2 : 3 ≤ 5 := by numbers
+  --have ht : 3 ≤ 5 → 3 ∣ n := by apply hn 3
+  -- have h3 : 3 | n := by apply hn
+  -/
+  /-
+  apply hn
+  · numbers
+  -/
+  dsimp [(· ∣ · )] at *
+  -- use 3 | n in the hypothesis does not work!
+  have h3 : ∃ k, n = 3 * k := by
+    apply hn
+    · numbers
+    · numbers
+  have h5 : ∃ k, n = 5 * k := by
+    apply hn
+    · numbers
+    · numbers
+  obtain ⟨k3, hn3⟩ := h3
+  obtain ⟨k5, hn5⟩ := h5
+  -- Use approach from 3.5. Bézout’s identity (Example 3.5.3)
+  have ht := calc
+    -- Find a multiple of 5 and a multiple of 3 whose difference is 1
+  /-
+    -- This approach failed because I rewrote in the reverse spots
+    n = 10 * (n) - 9 * (n) := by ring
+    _ = 10 * (5 * k5) - 9 * (3 * k3) := by rw [hn3, hn5]
+    _ = 50 * k5 - 27 * k3 := by ring
+  -/
+    n = 6 * n - 5 * n := by ring
+    -- need 2 separate rewrites to avoid this error:
+    -- tactic 'rewrite' failed, did not find instance of the pattern in the target expression
+    -- _ = 6 * (5 * k5) - 5 * (3 * k3) := by rw [hn3, hn5]
+    _ = 6 * (5 * k5) - 5 * n := by rw [hn5]
+    _ = 6 * (5 * k5) - 5 * (3 * k3) := by rw [hn3]
+    _ = 15 * (2 * k5 - k3) := by ring
+  use 2 * k5 - k3
+  apply ht
 
 example : ∃ n : ℕ, ∀ m : ℕ, n ≤ m := by
   use 0
@@ -139,10 +178,32 @@ example : ∃ n : ℕ, ∀ m : ℕ, n ≤ m := by
   extra
 
 example : ∃ a : ℝ, ∀ b : ℝ, ∃ c : ℝ, a + b < c := by
-  sorry
+  use 0
+  intro b
+  use b + 1
+  calc
+    0 + b = b := by ring
+    _ < b + 1 := by extra
 
 example : forall_sufficiently_large x : ℝ, x ^ 3 + 3 * x ≥ 7 * x ^ 2 + 12 := by
-  sorry
+  use 7
+  intro x hx
+  /-
+  have h1 := calc
+    x ^ 3 + 3 * x ≥ 7 ^ 3 + 3 * 7 := by rel [hx]
+    _ = 364 := by ring
+  have h2 := calc
+    7 * x ^ 2 + 12 ≥ 7 * 7 ^ 2 + 12 := by rel [hx]
+    _ = 355 := by ring
+  -/
+  calc
+    x ^ 3 + 3 * x = x * (x ^ 2) + 3 * x := by ring
+    _ ≥ 7 * (x ^ 2) + 3 * 7 := by rel [hx]
+    _ = 7 * (x ^ 2) + 12 + 9 := by ring
+    _ ≥ 7 * (x ^ 2) + 12 := by extra
 
 example : ¬(Prime 45) := by
-  sorry
+  apply not_prime 5 9
+  · numbers
+  · numbers
+  · numbers
