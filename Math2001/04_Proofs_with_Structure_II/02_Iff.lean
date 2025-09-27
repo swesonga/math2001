@@ -183,16 +183,73 @@ example (n : ℤ) : Even n ∨ Odd n := by
 
 
 example {x : ℝ} : 2 * x - 1 = 11 ↔ x = 6 := by
-  sorry
+  constructor
+  · intro h
+    /-
+    TODO: why doesn't cancel work this work?
+    have h1 := calc
+      2 * x = 2 * 6 := by addarith [h]
+    -/
+    have h1 : 2 * x = 2 * 6 := by addarith [h]
+    cancel 2 at h1
+  · intro h
+    calc
+      2 * x - 1 = 2 * 6 - 1 := by rw [h]
+      _ = 11 := by ring
 
 example {n : ℤ} : 63 ∣ n ↔ 7 ∣ n ∧ 9 ∣ n := by
-  sorry
+  constructor
+  · intro h
+    obtain ⟨k, h'⟩ := h
+    constructor
+    · use 9 * k
+      calc
+        n = 63 * k := h'
+        _ = 7 * (9 * k) := by ring
+    · use 7 * k
+      calc
+        n = 63 * k := h'
+        _ = 9 * (7 * k) := by ring
+  · intro h
+    obtain ⟨h7, h9⟩ := h
+    dsimp [(· ∣ ·)] at *
+    obtain ⟨c7, h7'⟩ := h7
+    obtain ⟨c9, h9'⟩ := h9
+    have ht := calc
+      n = 28 * n - 27 * n := by ring
+      _ = 28 * (9 * c9) - 27 * n := by rw [h9']
+      _ = 28 * (9 * c9) - 27 * (7 * c7) := by rw [h7']
+      _ = 63 * (4 * c9 - 3 * c7) := by ring
+    use 4 * c9 - 3 * c7
+    apply ht
 
 theorem dvd_iff_modEq {a n : ℤ} : n ∣ a ↔ a ≡ 0 [ZMOD n] := by
-  sorry
+  constructor
+  · intro h
+    dsimp [(· ∣ ·)] at *
+    obtain ⟨c, h'⟩ := h
+    use c
+    addarith [h']
+  · intro h
+    dsimp [Int.ModEq] at *
+    obtain ⟨c, h'⟩ := h
+    use c
+    calc
+      a = n * c := by addarith [h']
 
 example {a b : ℤ} (hab : a ∣ b) : a ∣ 2 * b ^ 3 - b ^ 2 + 3 * b := by
-  sorry
+  dsimp [(· ∣ ·)] at hab
+  obtain ⟨c, h2⟩ := hab
+  have ht := calc
+  /-
+    b * (2 * b ^ 2 - b + 3) = 2 * b ^ 3 - b ^ 2 + 3 * b := by ring
+  calc
+  -/
+    2 * b ^ 3 - b ^ 2 + 3 * b = b * (2 * b ^ 2 - b + 3) := by ring
+    _ = a * c * (2 * b ^ 2 - b + 3) := by rw [h2]
+    _ = a * (c * (2 * b ^ 2 - b + 3)) := by ring
+  use c * (2 * b ^ 2 - b + 3)
+  apply ht
 
 example {k : ℕ} : k ^ 2 ≤ 6 ↔ k = 0 ∨ k = 1 ∨ k = 2 := by
   sorry
