@@ -89,21 +89,79 @@ example {x : ℝ} : x ^ 2 + x - 6 = 0 ↔ x = -3 ∨ x = 2 := by
       _ = 0 := by ring
 
 example {a : ℤ} : a ^ 2 - 5 * a + 5 ≤ -1 ↔ a = 2 ∨ a = 3 := by
-  sorry
+  constructor
+  · intro h
+    /-
+    have h1 := calc
+      (a - 2) * (a - 3) = a ^ 2 - 5 * a + 6 := by ring
+      _ ≤ 0 := by addarith [h]
+    -- interval_cases a -- interval_cases failed: could not find bounds on a
+    have h2 := eq_zero_or_eq_zero_of_mul_eq_zero h1
+    -/
+    -- I couldn't come up with the rewriting the example uses in the text on my own
+    have h1 := calc
+      (2 * a - 5) ^ 2 = 4 * a ^ 2 - 20 * a + 25 := by ring
+      _ = 4 * (a ^ 2 - 5 * a + 5) + 5 := by ring
+      _ ≤ 4 * (-1) + 5 := by rel [h]
+      _ = 1 ^ 2 := by ring -- must be ^2 to apply abs_le_of_sq_le_sq' from 2.4
+    have h2 : -1 ≤ (2 * a - 5) ∧ (2 * a - 5) ≤ 1 := by
+      apply abs_le_of_sq_le_sq' h1
+      numbers
+    obtain ⟨hl, hr⟩ := h2
+    have hl2 : 2 * 2 ≤ 2 * a := by addarith [hl]
+    have hr2 : 2 * a ≤ 2 * 3 := by addarith [hr]
+    -- took a bit of effort to remember how this was done. Rereading the
+    -- sentence in 4.2.6. Example starting with this bit helped:
+    -- Therefore 2 * 2 ≤ 2a, so 2 ≤ a
+    cancel 2 at hl2
+    cancel 2 at hr2
+    interval_cases a
+    · left
+      numbers
+    · right
+      numbers
+  · intro h
+    obtain hl | hr := h
+    · calc
+        a ^ 2 - 5 * a + 5 = 2 ^ 2 - 5 * 2 + 5 := by rw [hl]
+        _ = -1 := by ring
+        _ ≤ -1 := by numbers
+    . calc
+        a ^ 2 - 5 * a + 5 = 3 ^ 2 - 5 * 3 + 5 := by rw [hr]
+        _ = -1 := by ring
+        _ ≤ -1 := by numbers
 
 example {n : ℤ} (hn : n ^ 2 - 10 * n + 24 = 0) : Even n := by
   have hn1 :=
     calc (n - 4) * (n - 6) = n ^ 2 - 10 * n + 24 := by ring
       _ = 0 := hn
   have hn2 := eq_zero_or_eq_zero_of_mul_eq_zero hn1
-  sorry
+  dsimp [Even]
+  obtain hl | hr := hn2
+  · use 2
+    calc
+      n = 4 := by addarith [hl]
+      _ = 2 * 2 := by ring
+  · use 3
+    calc
+      n = 6 := by addarith [hr]
+      _ = 2 * 3 := by ring
 
 example {n : ℤ} (hn : n ^ 2 - 10 * n + 24 = 0) : Even n := by
   have hn1 :=
     calc (n - 4) * (n - 6) = n ^ 2 - 10 * n + 24 := by ring
       _ = 0 := hn
   rw [mul_eq_zero] at hn1 -- `hn1 : n - 4 = 0 ∨ n - 6 = 0`
-  sorry
+  dsimp [Even]
+  obtain hl | hr := hn1
+  · use 2
+    calc
+      n = 4 := by addarith [hl]
+      _ = 2 * 2 := by ring
+  · use 3
+    calc
+      n = 6 := by addarith [hr]
+      _ = 2 * 3 := by ring
 
 example {x y : ℤ} (hx : Odd x) (hy : Odd y) : Odd (x + y + 1) := by
   rw [Int.odd_iff_modEq] at *
@@ -117,7 +175,9 @@ example (n : ℤ) : Even n ∨ Odd n := by
   · left
     rw [Int.even_iff_modEq]
     apply hn
-  · sorry
+  · right
+    rw [Int.odd_iff_modEq]
+    apply hn
 
 /-! # Exercises -/
 
