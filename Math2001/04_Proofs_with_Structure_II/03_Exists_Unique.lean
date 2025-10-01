@@ -19,9 +19,83 @@ example : ∃! a : ℝ, 3 * a + 1 = 7 := by
     _ = (7 - 1) / 3 := by rw [hy]
     _ = 2 := by numbers
 
-
+-- 4.3.2
 example : ∃! x : ℚ, ∀ a, a ≥ 1 → a ≤ 3 → (a - x) ^ 2 ≤ 1 := by
-  sorry
+  use 2
+  dsimp
+  constructor
+  · intro a h1 h2
+    /-
+    have a_sq_lower_bound : a ^ 2 ≤ 9 := by
+      calc
+        a ^ 2 = a * a := by ring
+        _ ≤ 3 * 3 := by rel [h2]
+        _ = 9 := by ring
+    have ht0 := calc
+      (a - 2) ^ 2 = a ^ 2 - 4 * a + 4 := by ring
+      -- _ ≤ 9 - 4 * 3 + 4 := by rel [h2] -- why doesn't this work?
+      _ ≤ 9 - 4 * a + 4 := by rel [a_sq_lower_bound]
+      _ ≤ 9 - 4 * 1 + 4 := by rel [h1]
+      _ = 9 := by ring -- well, this result wasn't helpful
+    -/
+    -- Just read 4.3.2 Example
+    /-
+    -- commenting out because it's not needed
+    have ht : 1 - a ≥ -2 := calc
+      1 - a ≥ 1 - 3 := by rel [h2]
+      _ = -2 := by ring
+
+    have ht2 : 3 - a ≤ 2 := calc
+      3 - a ≤ 3 - 1 := by rel [h1]
+      _ = 2 := by ring
+    have ht3' : a - 2 ≤ 1 := by addarith [ht]
+    -/
+    have ht3 : a - 2 ≤ 1 := calc
+      a - 2 ≤ 3 - 2 := by rel [h2]
+      _ = 1 := by ring
+    have ht4 : a - 2 ≥ -1 := calc
+      a - 2 ≥ 1 - 2 := by rel [h1]
+      _ = -1 := by ring
+    have ht5 : (a - 2) ^ 2 ≤ 1 ^ 2 := by
+      apply sq_le_sq' ht4 ht3 -- see example 2.1.7
+    calc
+      (a - 2) ^ 2 ≤ 1 ^ 2 := ht5
+      _ = 1 := by ring
+  · intro y h
+    have h1 : (1 - y) ^ 2 ≤ 1 := by
+      apply h 1
+      · numbers
+      numbers
+    have h3 : (3 - y) ^ 2 ≤ 1 := by
+      apply h 3
+      · numbers
+      numbers
+    have ht1 : (y - 2) ^ 2 ≤ 0 := calc
+      (y - 2) ^ 2 = ((1 - y) ^ 2 + (3 - y) ^ 2 - 2)/2 := by ring
+      _ ≤ (1 + 1 - 2)/2 := by rel [h1, h3]
+      _ = 0 := by ring
+    /-
+    -- why doesn't the proof work with this uncommented?
+    have ht2 : (y - 2) ^ 2 ≥ 0 := calc
+      (y - 2) ^ 2 ≥ 0 := by extra
+    -/
+    -- see example 2.2.3
+    have ht3 : (y - 2) ^ 2 = 0 := by
+      apply le_antisymm
+      · apply ht1
+        /-
+        -- where did ht2 go after "apply le_antisymm"? (this was before I commented out ht2)
+        apply ht2
+        -/
+      extra
+    have ht4 : (y - 2) * (y - 2) = 0 := calc
+      (y - 2) * (y - 2) = (y - 2) ^ 2 := by ring
+      _ = 0 := ht3
+    -- example 2.3.4
+    have hf := eq_zero_or_eq_zero_of_mul_eq_zero ht4
+    obtain hy | hy := hf
+    · addarith [hy]
+    · addarith [hy]
 
 example {x : ℚ} (hx : ∃! a : ℚ, a ^ 2 = x) : x = 0 := by
   obtain ⟨a, ha1, ha2⟩ := hx
