@@ -65,7 +65,12 @@ example {p : ℕ} (hp : 2 ≤ p) (H : ∀ m : ℕ, 1 < m → m < p → ¬m ∣ p
     left
     addarith [hm]
   -- the case `1 < m`
-  sorry
+  right
+  have ht : m ≤ p := by apply Nat.le_of_dvd hp' hmp
+  obtain hmeqp | hmltp : m = p ∨ m < p := eq_or_lt_of_le ht
+  · apply hmeqp
+  have ht2 : ¬m ∣ p := by apply H m hm_left hmltp
+  contradiction
 
 example : Prime 5 := by
   apply prime_test
@@ -96,7 +101,44 @@ example (n : ℤ) (hn : n ^ 2 ≡ 4 [ZMOD 5]) : n ≡ 2 [ZMOD 5] ∨ n ≡ 3 [ZM
   sorry
 
 example : Prime 7 := by
-  sorry
+  /-
+  constructor
+  · numbers
+  intro m h_m_divides_7
+  -- obtain ⟨k, hmk⟩ := h_m_divides_7
+  have ht := Nat.not_dvd_of_exists_lt_and_lt 7
+  have ht : m ≤ p := by apply Nat.le_of_dvd hp' hmp
+  -/
+  apply prime_test
+  · numbers
+  intro m h_m_gt_1 h_m_lt_7
+
+  /-
+  Look at how clean the Prime 5 example above is!
+  The have and apply happen only once before the individual cases are handled.
+  -/
+  interval_cases m
+  · have ht := Nat.not_dvd_of_exists_lt_and_lt 7 2
+    --obtain ⟨q, ht'⟩ := ht
+    apply ht
+    use 3
+    constructor <;> numbers
+  · have ht := Nat.not_dvd_of_exists_lt_and_lt 7 3
+    apply ht
+    use 2
+    constructor <;> numbers
+  · have ht := Nat.not_dvd_of_exists_lt_and_lt 7 4
+    apply ht
+    use 1
+    constructor <;> numbers
+  · have ht := Nat.not_dvd_of_exists_lt_and_lt 7 5
+    apply ht
+    use 1
+    constructor <;> numbers
+  · have ht := Nat.not_dvd_of_exists_lt_and_lt 7 6
+    apply ht
+    use 1
+    constructor <;> numbers
 
 example {x : ℚ} (h1 : x ^ 2 = 4) (h2 : 1 < x) : x = 2 := by
   have h3 :=
@@ -104,7 +146,13 @@ example {x : ℚ} (h1 : x ^ 2 = 4) (h2 : 1 < x) : x = 2 := by
       (x + 2) * (x - 2) = x ^ 2 + 2 * x - 2 * x - 4 := by ring
       _ = 0 := by addarith [h1]
   rw [mul_eq_zero] at h3
-  sorry
+  obtain hl | hr := h3
+  · have h_x_lt_1 := calc
+      x = -2 := by addarith [hl]
+      _ < 1 := by numbers
+    have h_contradiction := not_lt_of_gt h2
+    contradiction
+  addarith [hr]
 
 namespace Nat
 
