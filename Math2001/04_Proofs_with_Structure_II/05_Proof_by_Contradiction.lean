@@ -23,7 +23,11 @@ example : ¬ 3 ∣ 13 := by
     calc 13 = 3 * k := hk
       _ ≤ 3 * 4 := by rel [h4]
     numbers at h
-  · sorry
+  · have h := calc
+      13 = 3 * k := hk
+      _ ≥ 3 * 5 := by rel [h5]
+      _ = 15 := by ring
+    numbers at h
 
 example {x y : ℝ} (h : x + y = 0) : ¬(x > 0 ∧ y > 0) := by
   intro h
@@ -35,7 +39,25 @@ example {x y : ℝ} (h : x + y = 0) : ¬(x > 0 ∧ y > 0) := by
 
 
 example : ¬ (∃ n : ℕ, n ^ 2 = 2) := by
-  sorry
+  intro h
+  obtain ⟨a, h'⟩ := h
+  obtain h_a_le_1 | h_2_le_a := le_or_succ_le a 1
+  /-
+  TODO: why doesn't this compile? what does indenting it do?
+  have h_contra := calc
+    2 = a ^ 2 := by rw [h']
+    _ ≤ 1 ^ 2 := by rel [h_a_le_1]
+    -- _ < 2 := by numbers
+  numbers at h_contra
+  -/
+  · have h_contra := calc
+      2 = a ^ 2 := by rw [h']
+      _ ≤ 1 ^ 2 := by rel [h_a_le_1]
+    numbers at h_contra
+  · have h_contra := calc
+      2 = a ^ 2 := by rw [h']
+      _ ≥ 2 ^ 2 := by rel [h_2_le_a]
+    numbers at h_contra
 
 example (n : ℤ) : Int.Even n ↔ ¬ Int.Odd n := by
   constructor
