@@ -252,4 +252,106 @@ example {a b : ℤ} (hab : a ∣ b) : a ∣ 2 * b ^ 3 - b ^ 2 + 3 * b := by
   apply ht
 
 example {k : ℕ} : k ^ 2 ≤ 6 ↔ k = 0 ∨ k = 1 ∨ k = 2 := by
-  sorry
+  constructor
+  · intro h
+    /-
+    have h1 : k ^ 2 ≤ 3 ^ 2 := calc
+      k ^ 2 ≤ 6 := h
+      _ ≤ 3 ^ 2 := by numbers
+    have h2 : (-3 ≤ k) ∧ k ≤ 3 := by
+      apply abs_le_of_sq_le_sq'
+    -/
+    have h1 : k * k ≤ 3 * 3 := calc
+      k * k = k ^ 2 := by ring
+      _ ≤ 6 := h
+      _ ≤ 3 * 3 := by numbers
+    have h2 : k * k < 3 * 3 := calc
+      k * k = k ^ 2 := by ring
+      _ ≤ 6 := h
+      _ < 3 * 3 := by numbers
+    /-
+    have h3 : k < 3 := by
+      cancel k at h2
+    -- interval_cases k -- interval_cases failed: could not find upper bound on k
+    -/
+    /-
+    have h3 := calc
+      k ≤ k * k := by ring
+    -/
+    /-
+    have ht : k ≤ 6 := calc
+      k ≤ k * k := by numbers
+      _ = k ^ 2 := by ring
+      _ ≤ 6 := h
+    -/
+    /-
+    have ht : k * 1 ≤ k * k := calc
+      k * 1 ≤ k * k := by ring
+    -/
+    have ha := le_or_succ_le k 0
+    obtain h_k_le_0 | h_1_le_k := ha
+    left
+    · interval_cases k
+      ring
+    right
+    -- TODO: solve without using contradiction, which was introduced later
+    have hb : k ≤ 6 := calc
+      k = k * 1 := by ring
+      _ ≤ k * k := by rel [h_1_le_k]
+      _ = k ^ 2 := by ring
+      _ ≤ 6 := h
+    interval_cases k
+    · left
+      ring
+    · right
+      ring
+    · left
+      /-
+      have h_contra1 : 9 ≤ 6 := calc
+        9 = 3 ^ 2 := by ring
+        _ ≤ 6 := h
+      have h_contra2 : 6 ≤ 9 := calc
+        6 ≤ 9 := by numbers
+      -/
+      have h_contra3 : 9 < 9 := calc
+        9 = 3 ^ 2 := by ring
+        _ ≤ 6 := h
+        -- 9 ≤ 6 := h_contra1
+        _ < 9 := by numbers
+      /- This wasn't going through until I used · to indent all the cases -/
+      numbers at h_contra3
+    · left
+      have h_contra3 : 16 < 9 := calc
+        16 = 4 ^ 2 := by ring
+        _ ≤ 6 := h
+        -- 9 ≤ 6 := h_contra1
+        _ < 9 := by numbers
+      numbers at h_contra3
+    · left
+      have h_contra3 : 25 < 9 := calc
+        25 = 5 ^ 2 := by ring
+        _ ≤ 6 := h
+        -- 9 ≤ 6 := h_contra1
+        _ < 9 := by numbers
+      numbers at h_contra3
+    · left
+      have h_contra3 : 36 < 9 := calc
+        36 = 6 ^ 2 := by ring
+        _ ≤ 6 := h
+        -- 9 ≤ 6 := h_contra1
+        _ < 9 := by numbers
+      numbers at h_contra3
+  · intro h
+    obtain k0 | k1 | k2 := h
+    calc
+      k ^ 2 = 0 ^ 2 := by rw [k0]
+      _ = 0 := by ring
+      _ ≤ 6 := by numbers
+    calc
+      k ^ 2 = 1 ^ 2 := by rw [k1]
+      _ = 1 := by ring
+      _ ≤ 6 := by numbers
+    calc
+      k ^ 2 = 2 ^ 2 := by rw [k2]
+      _ = 4 := by ring
+      _ ≤ 6 := by numbers
