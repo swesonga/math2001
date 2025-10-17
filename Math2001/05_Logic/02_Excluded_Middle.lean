@@ -83,7 +83,34 @@ example : ∃ x : ℝ, Tribalanced x ∧ ¬ Tribalanced (x + 1) := by
   sorry
 
 example (P Q : Prop) : (¬P → ¬Q) ↔ (Q → P) := by
-  sorry
+  constructor <;> intro h h2
+  by_cases hp: P
+  · apply hp
+  · have : ¬ Q := by
+      apply h
+      apply hp
+    contradiction
+  by_cases hq: Q
+  · have : P := by
+      apply h
+      apply hq
+    contradiction
+  apply hq
 
 example : ∃ k : ℕ, Superpowered k ∧ ¬ Superpowered (k + 1) := by
-  sorry
+  use 1
+  constructor
+  · apply superpowered_one
+  intro h
+  dsimp [Superpowered] at *
+  have h2: Prime ((1 + 1) ^ (1 + 1) ^ 5 + 1) := by
+    apply h 5
+  have h3: ¬ Prime ((1 + 1) ^ (1 + 1) ^ 5 + 1) := by
+    apply not_prime 641 6700417
+    apply ne_of_gt
+    numbers
+    apply ne_of_lt
+    conv => ring
+    numbers
+    numbers
+  contradiction
