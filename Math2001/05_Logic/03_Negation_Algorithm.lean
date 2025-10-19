@@ -82,8 +82,78 @@ example (P : Prop) : ¬ (¬ P) ↔ P := by
   intro h1 h2
   contradiction
 
+#truth_table ¬(P → Q)
+
 example (P Q : Prop) : ¬ (P → Q) ↔ (P ∧ ¬ Q) := by
+  /-
+  constructor
+  intro h1
+  constructor
+  · by_cases hq : Q
+    --
+  /-
+  · by_cases hp : P
+    · apply hp
+    · by_cases hq : Q
+      · have ht : ¬ P → Q := by
+          apply hq
+      sorry
+  -/
   sorry
+  -/
+  by_cases hp : P
+  · by_cases hq : Q
+    · constructor
+      · intro h1
+        have ht : P → Q := by
+          intro hpt
+          apply hq
+        contradiction
+      · intro h1
+        obtain ⟨hp2, hnq⟩ := h1
+        contradiction
+    · constructor
+      · intro h
+        constructor
+        apply hp
+        apply hq
+      · intro h1 h2
+        have : Q := by
+          apply h2
+          apply hp
+        contradiction
+  · by_cases hq : Q
+    · constructor <;> intro h
+      · constructor -- ==>
+        · /-
+          This morning I reailzed that tried to show ht1 and ht2 and succeeded
+          I thought I would need them for ht3 but was obviously wrong. Sometimes
+          going to bed is the best way to unblock myself.
+          -/
+          have ht1: ¬ P → Q := by
+            intro h2
+            apply hq
+          have ht2: P → ¬ Q := by
+            intro h2
+            contradiction
+          have ht3: P → Q := by
+            intro h2
+            apply hq
+          contradiction
+        · have : P → Q := by
+            intro h
+            contradiction
+          contradiction
+      · -- <==
+        obtain ⟨hp2, hq2⟩ := h
+        contradiction
+    · constructor <;> intro h
+      · have : P → Q := by
+          intro h
+          contradiction
+        contradiction
+      · obtain ⟨hp2, hq2⟩ := h
+        contradiction
 
 example (P : α → Prop) : ¬ (∀ x, P x) ↔ ∃ x, ¬ P x := by
   sorry
