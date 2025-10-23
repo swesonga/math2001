@@ -22,14 +22,38 @@ example (n : ℕ) : 2 ^ n ≥ n + 1 := by
 example (n : ℕ) : Even n ∨ Odd n := by
   simple_induction n with k IH
   · -- base case
-    sorry
+    left
+    use 0
+    numbers
   · -- inductive step
-    obtain ⟨x, hx⟩ | ⟨x, hx⟩ := IH
-    · sorry
-    · sorry
+    obtain ⟨x, hx⟩ | ⟨x2, hx2⟩ := IH
+    · right
+      use x
+      calc
+        k + 1 = 2 * x + 1 := by rw [hx]
+        _ = 2 * x + 1 := by ring -- TODO: why does it fail without this line?
+    · left
+      use x2 + 1
+      calc
+        k + 1 = 2 * x2 + 1 + 1 := by rw [hx2]
+        _ = 2 * (x2 + 1) := by ring
 
 example {a b d : ℤ} (h : a ≡ b [ZMOD d]) (n : ℕ) : a ^ n ≡ b ^ n [ZMOD d] := by
-  sorry
+  simple_induction n with k IH
+  · use 0
+    /-
+    dsimp [Int.ModEq] at *
+    dsimp [(· ∣ · )] at h
+    -/
+    --obtain c | hc = h
+    --obtain ⟨c, hc⟩ = h
+    calc
+      a ^ 0 - b ^ 0 = 1 - 1 := by ring
+      _ = 0 := by ring
+      _ = d * 0 := by ring
+  · calc
+      a ^ (k + 1) = a ^ k * a := by ring
+      _ ≡ b ^ k * b [ZMOD d] := by rel [IH, h]
 
 example (n : ℕ) : 4 ^ n ≡ 1 [ZMOD 15] ∨ 4 ^ n ≡ 4 [ZMOD 15] := by
   simple_induction n with k IH
