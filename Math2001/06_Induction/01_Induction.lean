@@ -98,9 +98,18 @@ example : forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ 2 := by
   intro n hn
   induction_from_starting_point n, hn with k hk IH
   · -- base case
-    sorry
+    numbers
   · -- inductive step
-    sorry
+    have ht : 2 * 4 ≥ 1 := by numbers
+    calc
+      2 ^ (k + 1) = 2 * 2 ^ k := by ring
+      _ ≥ 2 * k ^ 2 := by rel [IH]
+      _ = k ^ 2 + k  * k := by ring
+      _ ≥ k ^ 2 + 4 * k := by rel [hk]
+      _ = k ^ 2 + 2 * k + 2 * k := by ring
+      _ ≥ k ^ 2 + 2 * k + 2 * 4 := by rel [hk]
+      _ ≥ k ^ 2 + 2 * k + 1 := by rel [ht]
+      _ = (k + 1) ^ 2 := by ring
 
 
 /-! # Exercises -/
