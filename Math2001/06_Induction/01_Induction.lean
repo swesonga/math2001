@@ -45,15 +45,23 @@ example {a b d : ℤ} (h : a ≡ b [ZMOD d]) (n : ℕ) : a ^ n ≡ b ^ n [ZMOD d
     dsimp [Int.ModEq] at *
     dsimp [(· ∣ · )] at h
     -/
-    --obtain c | hc = h
+    --obtain c | hc = h  -- these failed because I needed := instead of =
     --obtain ⟨c, hc⟩ = h
     calc
       a ^ 0 - b ^ 0 = 1 - 1 := by ring
       _ = 0 := by ring
       _ = d * 0 := by ring
-  · calc
-      a ^ (k + 1) = a ^ k * a := by ring
-      _ ≡ b ^ k * b [ZMOD d] := by rel [IH, h]
+  · dsimp [Int.ModEq] at *
+    dsimp [(· ∣ · )] at *
+    obtain ⟨x, h1⟩ := IH
+    obtain ⟨y, h2⟩ := h
+    have ht := calc
+      a ^ (k + 1) - b ^ (k + 1) = a * (a ^ k - b ^ k) + b ^ k * (a - b) := by ring
+      _ = a * (d * x) + b ^ k * (d * y) := by rw [h1, h2]
+      _ = d * (a * x) + d * (b ^ k * y) := by ring
+      _ = d * (a * x + b ^ k * y) := by ring
+    use a * x + b ^ k * y
+    apply ht
 
 example (n : ℕ) : 4 ^ n ≡ 1 [ZMOD 15] ∨ 4 ^ n ≡ 4 [ZMOD 15] := by
   simple_induction n with k IH
