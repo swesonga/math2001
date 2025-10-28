@@ -116,7 +116,29 @@ example : forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ 2 := by
 
 
 example (n : ℕ) : 3 ^ n ≥ n ^ 2 + n + 1 := by
-  sorry
+  simple_induction n with k IH
+  · numbers
+  · -- have ht : k - k = 0 := by numbers
+    /-
+    calc
+      3 ^ (k + 1) = 3 * 3 ^ k := by ring
+      _ ≥ 3 * (k ^ 2 + k + 1) := by rel [IH]
+      -- _ = 3 * (k ^ 2 + k + 1 + k - k) := by ring
+      -- _ = 3 * ((k + 1) ^ 2 - k) := by ring
+      /-
+      _ = 3 * k ^ 2 + 3 * k + 3 := by ring
+      _ = 3 * k ^ 2 + 3 * k + 3 + 6 * k - 3 * k := by ring
+      -/
+    -/
+    /-
+    Working in the opposite direction made this problem trivial
+    -/
+    calc
+      (k + 1) ^ 2 + (k + 1) + 1 = k ^ 2 + 3 * k + 3 := by ring
+      _ ≤ k ^ 2 + 3 * k + 3 + 2 * k ^ 2 := by extra
+      _ = 3 * (k ^ 2 + k + 1) := by ring
+      _ ≤ 3 * (3 ^ k) := by rel [IH]
+      _ = 3 ^ (k + 1) := by ring
 
 example {a : ℝ} (ha : -1 ≤ a) (n : ℕ) : (1 + a) ^ n ≥ 1 + n * a := by
   sorry
