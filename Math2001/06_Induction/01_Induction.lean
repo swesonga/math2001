@@ -329,11 +329,55 @@ example (n : ℕ) :
 
 example : forall_sufficiently_large n : ℕ, (3:ℤ) ^ n ≥ 2 ^ n + 100 := by
   dsimp
-  sorry
+  use 5
+  intro n hn
+  /-
+  I used "induction_from_starting_point n, hn with k hk IH" the first time
+  and was confused about why the goal state contained "x✝ : ?m.132656"
+  -/
+  induction_from_starting_point n, hn with k hk IH
+  · numbers
+  · -- have IH' : 2 ^ k + 100 ≤ 3 ^ k := IH
+    have h1 : (300:ℤ) ≥ (100:ℤ) := by numbers
+    have h2 : (3:ℤ) ≥ (2:ℤ) := by numbers
+    calc
+      /-
+      Using 3 ^ (k + 1) instead of (3:ℤ) ^ (k + 1) in the first line of this calc
+      block gave this error on the by rel IH' (next line), which was perplexing
+      since the step that could not be justified was exactly the IH!
+      rel failed, cannot prove goal by 'substituting' the listed relationships.
+      The steps which could not be automatically justified were:
+      2 ^ k + 100 ≤ 3 ^ k
+      -/
+      (3:ℤ) ^ (k + 1) = 3 * 3 ^ k := by ring
+      _ ≥ 3 * (2 ^ k + 100) := by rel [IH]
+      _ = 3 * 2 ^ k + 300 := by ring
+      _ ≥ 3 * 2 ^ k + 100 := by rel [h1] -- why does by extra work here?
+      _ ≥ 2 * 2 ^ k + 100 := by rel [h2]
+      _ = 2 ^ (k + 1) + 100 := by ring
 
 example : forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ 2 + 4 := by
   dsimp
-  sorry
+  use 5
+  intro n hn
+  induction_from_starting_point n, hn with k hk IH
+  · numbers
+  · have ht : 2 ≤ k := by calc
+      k ≥ 5 := hk
+      _ ≥ 2 := by numbers
+    calc
+      2 ^ (k + 1) = 2 * 2 ^ k := by ring
+      _ ≥ 2 * (k ^ 2 + 4) := by rel [IH]
+      _ = 2 * k ^ 2 + 8 := by ring
+      _ = k ^ 2 + 5 + k ^ 2 + 3 := by ring
+      _ = k ^ 2 + 5 + k * k + 3 := by ring
+      _ ≥ k ^ 2 + 5 + k * k := by extra
+      _ ≥ k ^ 2 + 5 + 2 * k := by rel [ht]
+      /-
+      _ ≥ k ^ 2 + 5 + 5 * k := by rel [hk]
+      _ ≥ k ^ 2 + 5 + 2 * k := by numbers
+      -/
+      _ = (k + 1) ^ 2 + 4 := by ring
 
 example : forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ 3 := by
   dsimp
