@@ -114,6 +114,38 @@ example : forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ 2 := by
 
 /-! # Exercises -/
 
+/-
+theorem refl_addition_inv : ∀ n : ℤ, n - n = 0 := by
+  intro n
+  ring
+
+theorem symm_incr : ∀ n : ℕ, n + 1 = 1 + n := by
+  intro n
+  ring
+  /-
+  simple_induction n with k IH
+  · numbers
+  · calc
+      k + 1 + 1 = 1 + k + 1 := by ring
+  -/
+
+theorem distr_sub : ∀ n : ℕ, n + 1 = 1 + n := by
+  intro n
+  ring
+
+theorem refl_addition_inv_nat : ∀ n : ℕ, n - n = 0 := by
+  intro n
+  simple_induction n with k IH
+  · numbers
+  calc
+  -- Nat.subself
+    k + 1 - (k + 1) = (1 + k) - (k + 1) := by ring
+    _ = (1 + k) - k - 1 := by ring
+
+theorem refl_addition_inv_nat2 : ∀ n : ℕ, n - n = 0 := by
+  intro n
+  apply refl_addition_inv (n : ℤ)
+-/
 
 example (n : ℕ) : 3 ^ n ≥ n ^ 2 + n + 1 := by
   simple_induction n with k IH
