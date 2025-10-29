@@ -141,17 +141,159 @@ example (n : ℕ) : 3 ^ n ≥ n ^ 2 + n + 1 := by
       _ = 3 ^ (k + 1) := by ring
 
 example {a : ℝ} (ha : -1 ≤ a) (n : ℕ) : (1 + a) ^ n ≥ 1 + n * a := by
-  sorry
+  simple_induction n with k IH
+  · calc
+      (1 + a) ^ 0 = 1 := by ring
+      _ ≥ 1 + 0 := by numbers
+      _ = 1 + 0 * a := by ring
+  · by_cases h: a ≥ 0
+    calc
+      (1 + a) ^ (k + 1) = (1 + a) * (1 + a) ^ k := by ring
+      _ ≥ (1 + a) * (1 + k * a) := by rel [IH]
+      _ = 1 + k * a + a * (1 + k * a) := by ring
+      _ = 1 + (k + 1) * a + a ^ 2 * k := by ring
+      _ ≥ 1 + (k + 1) * a := by extra
+    have h_a_lt_0 : a < 0 := lt_of_not_ge h
+    /-
+    Pasting the above calc block gives this error on the by rel [IH]:
+
+    rel failed, cannot prove goal by 'substituting' the listed relationships.
+    The steps which could not be automatically justified were:
+    0 ≤ 1 + a
+    -/
+    have h_1_plus_a_not_neg : 1 + a ≥ 0 :=
+      calc
+        1 + a ≥ 1 + -1 := by rel [ha]
+        /-
+        Commenting out the line below gives this error on the last line (by extra)
+        of the proof: unexpected token 'example'; expected ':='
+        -/
+        _ = 0 := by ring
+    calc
+      (1 + a) ^ (k + 1) = (1 + a) * (1 + a) ^ k := by ring
+      _ ≥ (1 + a) * (1 + k * a) := by rel [IH]
+      _ = 1 + k * a + a * (1 + k * a) := by ring
+      _ = 1 + (k + 1) * a + a ^ 2 * k := by ring
+      _ ≥ 1 + (k + 1) * a := by extra
+    /-
+    This proof doesn't need to be done using by_cases but doing so helped
+    me get to the final form of the proof (the a < 0 case works for a ≥ 0 too)
+    -/
 
 example (n : ℕ) : 5 ^ n ≡ 1 [ZMOD 8] ∨ 5 ^ n ≡ 5 [ZMOD 8] := by
-  sorry
+  simple_induction n with k IH
+  · left
+    numbers
+  · obtain IHl | IHr := IH -- why does obtain ⟨c, IH⟩ := IH do somthing?
+    · right
+      obtain ⟨c, IH⟩ := IHl
+      have IH' : 5 ^ k = 8 * c + 1 := by addarith [IH]
+      have ht := calc
+        5 ^ (k + 1) = 5 * 5 ^ k := by ring
+        _ = 5 * (8 * c + 1) := by rw [IH']
+      use 5 * c
+      have ht2 := calc
+        5 ^ (k + 1) = 5 * (8 * c + 1) := ht
+        _ = 8 * (5 * c) + 5 := by ring
+      addarith [ht2]
+    · left
+      obtain ⟨c, IH⟩ := IHr
+      have IH' : 5 ^ k = 8 * c + 5 := by addarith [IH]
+      have ht := calc
+        5 ^ (k + 1) = 5 * 5 ^ k := by ring
+        _ = 5 * (8 * c + 5) := by rw [IH']
+        _ = 8 * (5 * c) + 25 := by ring
+      have ht2 : 8 * (5 * c) ≡ 0 [ZMOD 8] := by
+        use 5 * c
+        ring
+      have ht3 : 25 ≡ 1 [ZMOD 8] := by
+        use 3
+        ring
+      have ht4 : 8 * (5 * c) + 25 ≡ 1 [ZMOD 8] := calc
+        8 * (5 * c) + 25 ≡ 0 + 25 [ZMOD 8] := by rel [ht2]
+        _ = 25 := by ring
+        _ ≡ 1 [ZMOD 8] := by rel [ht3]
+      obtain ⟨c2, h⟩ := ht4
+      use c2
+      calc
+        5 ^ (k + 1) - 1 = 8 * (5 * c) + 25 - 1:= by rw [ht]
+          _ = 8 * c2 := h
 
 example (n : ℕ) : 6 ^ n ≡ 1 [ZMOD 7] ∨ 6 ^ n ≡ 6 [ZMOD 7] := by
-  sorry
+  simple_induction n with k IH
+  · left
+    numbers
+  · obtain IHl | IHr := IH
+    · right
+      obtain ⟨c, IH⟩ := IHl
+      have IH' : 6 ^ k = 7 * c + 1 := by addarith [IH]
+      have ht := calc
+        6 ^ (k + 1) = 6 * 6 ^ k := by ring
+        _ = 6 * (7 * c + 1) := by rw [IH']
+        _ = 7 * (6 * c) + 6 := by ring
+      use 6 * c
+      addarith [ht]
+    · left
+      obtain ⟨c, IH⟩ := IHr
+      have IH' : 6 ^ k = 7 * c + 6 := by addarith [IH]
+      have ht := calc
+        6 ^ (k + 1) = 6 * 6 ^ k := by ring
+        _ = 6 * (7 * c + 6) := by rw [IH']
+        _ = 7 * (6 * c) + 36 := by ring
+        /-
+      have ht2 : 7 * (6 * c) + 36 ≡ 1 [ZMOD 7] := calc
+        7 * (6 * c) + 36 -/ _ ≡ 0 + 36 [ZMOD 7] := by extra
+        _ = 36 := by ring
+        _ ≡ 1 [ZMOD 7] := by
+          use 5
+          ring
+      apply ht
 
 example (n : ℕ) :
     4 ^ n ≡ 1 [ZMOD 7] ∨ 4 ^ n ≡ 2 [ZMOD 7] ∨ 4 ^ n ≡ 4 [ZMOD 7] := by
-  sorry
+  simple_induction n with k HK
+  · left
+    use 0
+    ring
+  · obtain HK1 | HK2 | HK3 := HK
+    · obtain ⟨c, h⟩ := HK1
+      have h : 4 ^ k = 7 * c + 1 := by addarith [h]
+      have ht := calc
+        4 ^ (k + 1) = 4 * 4 ^ k := by ring
+        _ = 4 * (7 * c + 1) := by rw [h]
+        _ = 7 * (4 * c) + 4 := by ring
+        _ ≡ 0 + 4 [ZMOD 7] := by extra
+        _ = 4 := by ring
+      right
+      right
+      apply ht
+    · obtain ⟨c, h⟩ := HK2
+      have h : 4 ^ k = 7 * c + 2 := by addarith [h]
+      have ht := calc
+        4 ^ (k + 1) = 4 * 4 ^ k := by ring
+        _ = 4 * (7 * c + 2) := by rw [h]
+        _ = 7 * (4 * c) + 8 := by ring
+        _ ≡ 0 + 8 [ZMOD 7] := by extra
+        _ = 8 := by ring
+        _ ≡ 1 [ZMOD 7] := by
+          use 1
+          ring
+      left
+      apply ht
+    · obtain ⟨c, h⟩ := HK3
+      have h : 4 ^ k = 7 * c + 4 := by addarith [h]
+      have ht := calc
+        4 ^ (k + 1) = 4 * 4 ^ k := by ring
+        _ = 4 * (7 * c + 4) := by rw [h]
+        _ = 7 * (4 * c) + 16 := by ring
+        _ ≡ 0 + 16 [ZMOD 7] := by extra
+        _ = 16 := by ring
+        _ ≡ 2 [ZMOD 7] := by
+          use 2
+          ring
+      right
+      left
+      apply ht
 
 example : forall_sufficiently_large n : ℕ, (3:ℤ) ^ n ≥ 2 ^ n + 100 := by
   dsimp
