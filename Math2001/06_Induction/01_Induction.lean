@@ -384,7 +384,33 @@ example : forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ 3 := by
   sorry
 
 theorem Odd.pow {a : ℕ} (ha : Odd a) (n : ℕ) : Odd (a ^ n) := by
-  sorry
+  simple_induction n with k hk
+  · use 0
+    ring
+  · obtain ⟨c1, h1⟩ := ha
+    obtain ⟨c2, h2⟩ := hk
+    have ht := calc
+      a ^ (k + 1) = a * a ^ k := by ring
+      _ = (2 * c1 + 1) * a ^ k := by rw [h1]
+      _ = (2 * c1 + 1) * (2 * c2 + 1) := by rw [h2]
+      _ = 4 * c1 * c2 + 2 * c1 + 2 * c2 + 1 := by ring
+      _ = 2 * (2 * c1 * c2 + c1 + c2) + 1 := by ring
+    use 2 * c1 * c2 + c1 + c2
+    apply ht
 
 theorem Nat.even_of_pow_even {a n : ℕ} (ha : Even (a ^ n)) : Even a := by
-  sorry
+  by_cases h : Even a
+  · apply h
+  · /-
+    -- I ran into issues here because I was using Int instead of Nat
+    rw [Int.odd_iff_not_even] at h
+    rw [Int.even_iff_not_odd] at h
+    -/
+    have h1 : Odd a := by
+      rw [Nat.odd_iff_not_even]
+      apply h
+    have h2 : Odd (a ^ n) := by
+      apply Odd.pow
+      apply h1
+    rw [Nat.odd_iff_not_even] at h2
+    contradiction
