@@ -105,9 +105,59 @@ example (n : ℕ) : ∀ d, 1 ≤ d → d ≤ n → d ∣ n ! := by
     intro d hk1 hk
     obtain hk | hk : d = k + 1 ∨ d < k + 1 := eq_or_lt_of_le hk
     · -- case 1: `d = k + 1`
-      sorry
+      use (k !)
+      calc
+        (k + 1) ! = (k + 1) * k ! := by rw [factorial]
+        _ = d * k ! := by rw [hk]
     · -- case 2: `d < k + 1`
+      /-
+      have ht : d ≤ k := by
+        by_cases h2 : d ≤ k
+        · apply h2
+        · -- rw [lt_iff_not_le] at h2
+          -- rw [lt_of_not_le] at h2
+          have h3 : k < d := by
+            apply lt_of_not_le
+            apply h2
+          have h4 : d + 1 > k + 1 := by addarith [h3]
+          /-
+          have h5 : ¬ d < k + 1 := by
+            apply not_lt_of_le
+            -- looking at le_or_succ_le gave me this idea
+            apply le_or_lt k d
+          -/
+          /-
+          have h6 : k ≤ d ∨ d < k := by
+            apply le_or_lt k d
+          obtain h6a | h6b := h6
+          -/
+          /-
+          have h6 : d ≥ k + 1 := by
+            by_cases ht : d ≥ k + 1
+            · apply ht
+            ·
+          -/
+          rw [le_of_succ_le_succ] at hk
       sorry
+      -/
+      -- Used Copilot with Claude Sonnet 4 to get the lemma lt_succ_iff
+      -- I ran into this in an earlier chapter. What did the book expect us to use?
+      rw [Nat.lt_succ_iff] at hk
+      have h : d ∣ k ! := by
+        apply IH d
+        apply hk1
+        apply hk
+      obtain ⟨c, h'⟩ := h
+      use (k + 1) * c
+      calc
+      /-
+        d * ((k + 1) * c) = (k + 1) * (d * c) := by ring
+        _ = (k + 1) * k ! := by rw [h']
+        _ = (k + 1) ! := by rw [factorial]
+      -/
+        (k + 1) ! = (k + 1) * k ! := by rw [factorial]
+        _ = (k + 1) * (d * c) := by rw [h']
+        _ = d * ((k + 1) * c) := by ring
 
 example (n : ℕ) : (n + 1)! ≥ 2 ^ n := by
   sorry
