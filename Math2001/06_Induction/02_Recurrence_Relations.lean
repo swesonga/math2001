@@ -171,31 +171,71 @@ def c : ℕ → ℤ
   | n + 1 => 3 * c n - 10
 
 example (n : ℕ) : Odd (c n) := by
-  sorry
+  simple_induction n with k IH
+  · use 3
+    calc
+       c 0 = 7 := by rw [c]
+       _ = 2 * 3 + 1 := by numbers
+  · obtain ⟨c1, h⟩ := IH
+    have ht := calc
+      c (k + 1) = 3 * c k - 10 := by rw [c]
+      _ = 3 * (2 * c1 + 1) - 10 := by rw [h]
+      _ = 2 * (3 * c1 - 4) + 1 := by ring
+    use 3 * c1 - 4
+    apply ht
 
 example (n : ℕ) : c n = 2 * 3 ^ n + 5 := by
-  sorry
+  simple_induction n with k IH
+  · calc
+      c 0 = 7 := by rw [c]
+      _ = 2 * 3 ^ 0 + 5 := by ring
+  · calc
+      c (k + 1) = 3 * c k - 10 := by rw [c]
+      _ = 3 * (2 * 3 ^ k + 5) - 10 := by rw [IH]
+      _ = 2 * 3 ^ (k + 1) + 15 - 10 := by ring
+      _ = 2 * 3 ^ (k + 1) + 5 := by ring
 
 def y : ℕ → ℕ
   | 0 => 2
   | n + 1 => (y n) ^ 2
 
 example (n : ℕ) : y n = 2 ^ (2 ^ n) := by
-  sorry
+  simple_induction n with k IH
+  · calc
+      y 0 = 2 := by rw [y]
+      _ = 2 ^ 2 ^ 0 := by ring
+  · calc
+      y (k + 1) = (y k) ^ 2 := by rw [y]
+      _ = (2 ^ 2 ^ k) ^ 2 := by rw [IH]
+      _ = 2 ^ 2 ^ (k + 1) := by ring
 
 def B : ℕ → ℚ
   | 0 => 0
   | n + 1 => B n + (n + 1 : ℚ) ^ 2
 
 example (n : ℕ) : B n = n * (n + 1) * (2 * n + 1) / 6 := by
-  sorry
+  simple_induction n with k IH
+  · calc
+      B 0 = 0 := by rw [B]
+      _ = 0 * (0 + 1) * (2 * 0 + 1) / 6 := by ring
+  · calc
+      B (k + 1) = B k + (k + 1) ^ 2 := by rw [B]
+      _ = k * (k + 1) * (2 * k + 1) / 6 + (k + 1) ^ 2 := by rw [IH]
+      _ = (↑k + 1) * (↑k + 1 + 1) * (2 * (↑k + 1) + 1) / 6 := by ring
 
 def S : ℕ → ℚ
   | 0 => 1
   | n + 1 => S n + 1 / 2 ^ (n + 1)
 
 example (n : ℕ) : S n = 2 - 1 / 2 ^ n := by
-  sorry
+  simple_induction n with k IH
+  · calc
+      S 0 = 1 := by rw [S]
+      _ = 2 - 1 / 2 ^ 0 := by ring
+  · calc
+      S (k + 1) = S k + 1 / 2 ^ (k + 1) := by rw [S]
+      _ = 2 - 1 / 2 ^ k + 1 / 2 ^ (k + 1) := by rw [IH]
+      _ = 2 - 1 / 2 ^ (k + 1) := by ring
 
 example (n : ℕ) : 0 < n ! := by
   sorry
