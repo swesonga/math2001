@@ -159,9 +159,63 @@ example (n : ℕ) : ∀ d, 1 ≤ d → d ≤ n → d ∣ n ! := by
         _ = (k + 1) * (d * c) := by rw [h']
         _ = d * ((k + 1) * c) := by ring
 
-example (n : ℕ) : (n + 1)! ≥ 2 ^ n := by
-  sorry
+#eval (0 + 1)!
 
+-- Copilot introduced me to the unfold tactic
+example : 1! = 1 := /- by
+  calc
+    1! = factorial 1 := rfl
+    _ = 1 * factorial 0 := by unfold factorial
+    _ = 1 * 1 := by unfold factorial
+    _ = 1 := by ring -/ rfl
+
+example : 1! = 1 := by
+  calc
+    -- 1! = (0 + 1) * factorial 0 := by rw [factorial]
+    (0 + 1) * 1 = (0 + 1) * factorial 0 := by rw [factorial]
+    _ = (0 + 1) * 1 := by rw [factorial]
+    _ = 1 := by ring
+
+example (n : ℕ) : (n + 1)! ≥ 2 ^ n := by
+  simple_induction n with k IH
+  · calc
+      (0 + 1) * 1 = (0 + 1) * factorial 0 := by rw [factorial]
+       _ = (0 + 1) * 1 := by rw [factorial]
+       _ ≥ 2 ^ 0 := by numbers
+  /-
+  · unfold factorial
+    unfold factorial
+    numbers
+    /-
+    calc
+      1! = (0 + 1) * factorial 0 := by rw [factorial]
+    /-
+      (0 + 1)! = (0 + 1) * (factorial 0) := by rw [factorial (0 + 1)]
+      _ = (0 + 1) * 1 := by rw [factorial]
+      _ ≥ 2 ^ 0 := by numbers
+    -/
+    /-
+    calc
+      (0 + 1)! = 1 ! := by ring
+      _ = (0 + 1) * factorial 0 := by rw [factorial]
+      _ = (0 + 1) * 1 := by rw [factorial]
+      _ ≥ 2 ^ 0 := by numbers
+    -/
+      (0 + 1)! = (0 + 1) * factorial 0 := by rw [factorial]
+      /-
+      Using "by ring" above fails with this:
+
+ring failed, ring expressions not equal
+⊢ 1! = 0!
+      -/
+    -/
+  -/
+  · calc
+      (k + 1 + 1)! = (k + 1 + 1) * (k + 1)! := by rw [factorial]
+      _ ≥ (k + 1 + 1) * 2 ^ k := by rel [IH]
+      _ = k * 2 ^ k + 2 ^ k + 2 ^ k := by ring
+      _ = k * 2 ^ k + 2 ^ (k + 1) := by ring
+      _ ≥ 2 ^ (k + 1) := by extra
 
 /-! # Exercises -/
 
@@ -238,10 +292,68 @@ example (n : ℕ) : S n = 2 - 1 / 2 ^ n := by
       _ = 2 - 1 / 2 ^ (k + 1) := by ring
 
 example (n : ℕ) : 0 < n ! := by
-  sorry
+  simple_induction n with k IH
+  · calc
+      --0 < 1! := by numbers
+      --_ = 1! := by rw [factorial]
+      (0 + 1) * factorial 0 = 1 := by rw [factorial]
+      _ > 0 := by numbers
+  · have h1 : ¬ k + 1 = 0 := by extra
+    /-
+      intro h
+      by_cases ht : k ≤ 0
+      · interval_cases k
+        numbers at h
+      · apply lt_of_not_le at ht
+    -/
+    have h2 : ¬ k ! = 0 := by extra
+    have h3 : ¬ (k + 1) * k ! = 0 := by
+      intro h
+      apply eq_zero_or_eq_zero_of_mul_eq_zero at h
+      obtain hl | hr := h
+      · contradiction
+      · contradiction
+    -- h4 and h5 are the only hypotheses required
+    have h4 : 1 ≤ (k !) := by
+      -- rw [Nat.lt_succ_iff]
+      rw [Nat.succ_le_iff]
+      apply IH
+    have h5 : k + 1 ≥ 1 := by extra
+    calc
+      (k + 1)! = (k + 1) * k ! := by rw [factorial]
+      _ ≥ (k + 1) * 1 := by rel [h4]
+      _ = k + 1 := by ring
+      _ ≥ 1 := h5
+      _ > 0 := by numbers
 
 example {n : ℕ} (hn : 2 ≤ n) : Nat.Even (n !) := by
-  sorry
+  /-
+  simple_induction n with k IH
+  · numbers at hn
+    /-
+    use 0
+    calc
+      0! = 1 := by rw [factorial]
+    -/
+  -/
+  induction_from_starting_point n, hn with k hn IH
+  · use 1
+    /-
+    calc
+      (1 + 1) * factorial 1 = 2 * factorial 1 := by rw [factorial]
+      _ = 2 * ((0 + 1) * factorial 0) := by rw [factorial]
+    -/
+    unfold factorial
+    unfold factorial
+    unfold factorial
+    numbers
+  · obtain ⟨c, h⟩ := IH
+    use c * (k + 1)
+    calc
+      (k + 1)! = (k + 1) * k ! := by rw [factorial]
+      _ = (k + 1) * (2 * c) := by rw [h]
+      _ = 2 * c * (k + 1) := by ring
+    ring
 
 example (n : ℕ) : (n + 1) ! ≤ (n + 1) ^ n := by
   sorry
