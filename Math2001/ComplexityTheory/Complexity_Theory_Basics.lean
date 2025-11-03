@@ -116,14 +116,24 @@ theorem pow_2_n_ge_1 : forall_sufficiently_large n : ℕ, 2 ^ n ≥ 1 := by
       _ ≥ 2 * 1 := by rel [h1]
       _ ≥ 1 := by numbers
 
+theorem pow_c_n_ge_1 : ∀ c n : ℕ, c > 0 → c ^ n ≥ 1 := by
+  intro c n hc
+  simple_induction n with k IH
+  · calc
+        c ^ 0 = 1 := by ring
+        _ ≥ 1 := by numbers
+  · have h1 : 1 ≤ c := by
+    -- rw [Nat.lt_succ_iff] at hk
+      rw [Nat.succ_le_iff] -- doesn't work with h1 : c ≥ 1
+      apply hc
+    calc
+      c ^ (k + 1) = c * c ^ k := by ring
+      _ ≥ 1 * 1 := by rel [IH, h1]
+
 theorem pow_2_n_ge_1' : ∀ n : ℕ, 2 ^ n ≥ 1 := by
   intro n
-  simple_induction n with k IH
-  · numbers
-  · calc
-      2 ^ (k + 1) = 2 * 2 ^ k := by ring
-      _ ≥ 2 * 1 := by rel [IH]
-      _ ≥ 1 := by numbers
+  apply pow_c_n_ge_1
+  numbers
 
 theorem pow_2_n_ge_n : forall_sufficiently_large n : ℕ, 2 ^ n ≥ n := by
   dsimp
@@ -231,6 +241,34 @@ theorem pow_comp : ∀ m n : ℕ, m ≤ n → 2 ^ m ≤ 2 ^ n := by
         _ = 2 ^ (n' + 1) := by ring
   | 0, n' + 1 =>
       apply pow_2_n_ge_1'
+
+theorem pow_le_of_exp_le : ∀ c m n : ℕ, c > 0 → m ≤ n → c ^ m ≤ c ^ n := by
+  intro c m n hc h
+  match m, n with
+  | 0, 0 =>
+      calc
+        c ^ 0 = 1 := by ring
+        _ ≤ 1 := by numbers
+        _ = c ^ 0 := by ring
+  | m' + 1, 0 =>
+      --apply all_nat_ge_0
+      have ht : ¬ m' + 1 ≤ 0 := by
+        apply succ_not_le_0
+      contradiction
+  | 0, n' + 1 =>
+      apply pow_c_n_ge_1
+      apply hc
+  | m' + 1, n' + 1 =>
+      have IHm := pow_le_of_exp_le c m' n'
+      have hmn : m' ≤ n' := by addarith [h]
+      have ht : c ^ m' ≤ c ^ n' := by
+        apply IHm
+        apply hc
+        apply hmn
+      calc
+        c ^ (m' + 1) = c * c ^ m' := by ring
+        _ ≤ c * c ^ n' := by rel [ht]
+        _ = c ^ (n' + 1) := by ring
 
 /-
 #eval Nat.log 2 1
