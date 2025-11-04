@@ -215,6 +215,11 @@ theorem succ_gt_0 : ∀n : ℕ, n + 1 > 0 := by
     n + 1 ≥ 0 + 1 := by extra
     _ > 0 := by numbers
 
+theorem succ_ne_0 : ∀n : ℕ, n + 1 ≠ 0 := by
+  intro n
+  apply ne_of_gt
+  apply succ_gt_0
+
 theorem succ_not_le_0 : ∀n : ℕ, ¬ n + 1 ≤ 0 := by
   intro n hn
   have h1 : n + 1 > 0 := by apply succ_gt_0
