@@ -551,35 +551,9 @@ theorem succ_n_lt_pow_2_succ_n : ∀ n : ℕ, n < 2 ^ n := by
       _ ≤ 2 ^ k + 2 ^ k := by rel [h]
       _ = 2 ^ (k + 1) := by ring
 
-theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 256 →
-  (Nat.log 2 n) ^ 2 < n ^ 2 := by
+theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 256 →
+  (Nat.log 2 n) < n := by
   intro n hn
-  apply poly_comp_lt
-  constructor
-  numbers
-  constructor
-  /-
-  unfold Nat.log
-  dsimp
-  have ht : 2 ≤ n ∧ 1 < 2 := by
-    constructor
-    calc
-      2 ≤ 256 := by numbers
-      _ ≤ n := hn
-    numbers
-  rfl
-  -/
-  have h_2_le_n : 2 ≤ n := by
-    calc
-      2 ≤ 256 := by numbers
-      _ ≤ n := hn
-  apply Nat.log_pos
-  numbers
-  apply h_2_le_n
-  have h_n_gt_0 : n > 0 := calc -- copied
-    n ≥ 256 := hn
-    _ > 0 := by numbers
-  apply h_n_gt_0
   induction_from_starting_point n, hn with k hk IH
   · /-
     Next 2 lines suggested by Copilot with Claude Sonnet 4 agent
@@ -623,6 +597,38 @@ theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 256 →
     -/
     apply succ_n_lt_pow_2_succ_n
 
+theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 256 →
+  (Nat.log 2 n) ^ 2 < n ^ 2 := by
+  intro n hn
+  apply poly_comp_lt
+  constructor
+  numbers
+  constructor
+  /-
+  unfold Nat.log
+  dsimp
+  have ht : 2 ≤ n ∧ 1 < 2 := by
+    constructor
+    calc
+      2 ≤ 256 := by numbers
+      _ ≤ n := hn
+    numbers
+  rfl
+  -/
+  have h_2_le_n : 2 ≤ n := by
+    calc
+      2 ≤ 256 := by numbers
+      _ ≤ n := hn
+  apply Nat.log_pos
+  numbers
+  apply h_2_le_n
+  have h_n_gt_0 : n > 0 := calc -- copied
+    n ≥ 256 := hn
+    _ > 0 := by numbers
+  apply h_n_gt_0
+  apply log_2_n_lt_n
+  apply hn
+
 theorem pow_log_2_n_2_lt_n : ∀ n : ℕ, n ≥ 256 → Nat.succ (Nat.log 2 n) * Nat.log 2 n < n := by
   intro n hn
   match n with
@@ -633,7 +639,7 @@ theorem pow_log_2_n_2_lt_n : ∀ n : ℕ, n ≥ 256 → Nat.succ (Nat.log 2 n) *
   | n' + 2 =>
       have IH1 := pow_log_2_n_2_lt_n n'
       have IH2 := pow_log_2_n_2_lt_n (n' + 1)
-
+      sorry
 
 theorem pow_2_n_ge_pow_n_k5 : ∀ k n : ℕ, k ≥ 2 ∧ n ≥ 2 ^ k ^ 3 →
   Nat.succ (Nat.log 2 n) * k < n := by
