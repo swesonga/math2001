@@ -246,6 +246,99 @@ theorem pow_comp : ∀ m n : ℕ, m ≤ n → 2 ^ m ≤ 2 ^ n := by
   | 0, n' + 1 =>
       apply pow_2_n_ge_1'
 
+/-
+theorem poly_comp : ∀ c m n : ℕ, (c > 0 ∧ m > 0 ∧ n > 0) → m ≤ n → m ^ c ≤ n ^ c := by
+  intro c m n hpos hmn
+  obtain ⟨hc, hm, hn⟩ := hpos
+  match m, n with
+  | 0, 0 =>
+      numbers at hm
+  | m' + 1, 0 =>
+      numbers at hn
+  | 0, n' + 1 =>
+      numbers at hm
+  | m' + 1, n' + 1 =>
+      have hmn' : m' ≤ n' := by addarith [hmn]
+      calc
+        (m' + 1) ^ c = 0 := by ring
+        _ ≤ 1 := by numbers
+        _ = c ^ 0 := by ring
+-/
+
+theorem poly_comp_le : ∀ c m n : ℕ, (c > 0 ∧ m > 0 ∧ n > 0) → m ≤ n → m ^ c ≤ n ^ c := by
+  intro c m n hpos hmn
+  obtain ⟨hc, hm, hn⟩ := hpos
+  match c with
+  | 0 =>
+      numbers at hc
+  | 1 =>
+      calc
+        m ^ 1 = m := by ring
+        _ ≤ n := hmn
+        _ = n ^ 1 := by ring
+  | c' + 2 =>
+      have IH1 := poly_comp_le (c' + 1) m n
+      /-
+      have ht : m ^ c' ≤ n ^ c' := by
+        apply IH1
+        constructor
+        apply hc
+        constructor
+        apply hm
+        apply hn
+        apply hmn
+      apply ht
+      -/
+      have ht : m ^ (c' + 1) ≤ n ^ (c' + 1) := by
+        apply IH1
+        constructor
+        apply succ_gt_0
+        constructor
+        apply hm
+        apply hn
+        apply hmn
+      calc
+        m ^ (c' + 2) = m * m ^ (c' + 1) := by ring
+        _ ≤ n * n ^ (c' + 1) := by rel [hmn, ht]
+        _ = n ^ (c' + 2) := by ring
+
+theorem poly_comp_lt : ∀ c m n : ℕ, (c > 0 ∧ m > 0 ∧ n > 0) → m < n → m ^ c < n ^ c := by
+  intro c m n hpos hmn
+  obtain ⟨hc, hm, hn⟩ := hpos
+  match c with
+  | 0 =>
+      numbers at hc
+  | 1 =>
+      calc
+        m ^ 1 = m := by ring
+        _ < n := hmn
+        _ = n ^ 1 := by ring
+  | c' + 2 =>
+      have IH1 := poly_comp_lt (c' + 1) m n
+      /-
+      have ht : m ^ c' ≤ n ^ c' := by
+        apply IH1
+        constructor
+        apply hc
+        constructor
+        apply hm
+        apply hn
+        apply hmn
+      apply ht
+      -/
+      have ht : m ^ (c' + 1) < n ^ (c' + 1) := by
+        apply IH1
+        constructor
+        apply succ_gt_0
+        constructor
+        apply hm
+        apply hn
+        apply hmn
+      calc
+        m ^ (c' + 2) = m * m ^ (c' + 1) := by ring
+        _ < n * n ^ (c' + 1) := by rel [hmn, ht]
+        _ = n ^ (c' + 2) := by ring
+
 theorem pow_le_of_exp_le : ∀ c m n : ℕ, c > 0 → m ≤ n → c ^ m ≤ c ^ n := by
   intro c m n hc h
   match m, n with
