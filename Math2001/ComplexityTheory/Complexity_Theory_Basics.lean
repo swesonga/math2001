@@ -561,7 +561,8 @@ theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 2 →
     have h : Nat.log 2 2 = 1 := by rfl
     rw [h]
     numbers
-  · have h_k_gt_0 : k > 0 := calc
+  · /-
+    have h_k_gt_0 : k > 0 := calc
       k ≥ 2 := hk
       _ > 0 := by numbers
     have hta : k ≠ 0 := by
@@ -595,6 +596,9 @@ theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 2 →
       _ = 2 * k := by ring
       _ < 2 * 2 ^ (Nat.log 2 k + 1) := by rel [ht2]
     -/
+    -/
+    apply Nat.log_lt_of_lt_pow
+    apply succ_ne_0
     apply succ_n_lt_pow_2_succ_n
 
 theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 2 →
