@@ -209,11 +209,15 @@ theorem pow_comp : ∀ m n : ℕ, 2 ^ m ≥ 2 ^ n → m ≥ n := by
   | m', n' + 1 =>
 -/
 
-theorem succ_not_le_0 : ∀n : ℕ, ¬ n + 1 ≤ 0 := by
-  intro n hn
-  have h1 : n + 1 > 0 := calc
+theorem succ_gt_0 : ∀n : ℕ, n + 1 > 0 := by
+  intro n
+  calc
     n + 1 ≥ 0 + 1 := by extra
     _ > 0 := by numbers
+
+theorem succ_not_le_0 : ∀n : ℕ, ¬ n + 1 ≤ 0 := by
+  intro n hn
+  have h1 : n + 1 > 0 := by apply succ_gt_0
   --have h2 : ¬ n + 1 > 0 := by
   apply not_lt_of_le at h1
   · apply h1
