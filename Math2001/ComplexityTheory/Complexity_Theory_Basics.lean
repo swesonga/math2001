@@ -425,14 +425,19 @@ theorem pow_lt_of_exp_lt : ∀ c m n : ℕ, c > 1 → m < n → c ^ m < c ^ n :=
 
 /-
 #eval Nat.log 2 1
+-- See pow_le_iff_le_log in .lake/packages/mathlib/Mathlib/Data/Nat/Log.lean
 theorem discrete_log_comp : ∀ n : ℕ, n > 0 → Nat.log 2 n ≤ n := by
   intro n hn
   match n with
+  | 0 =>
+      numbers at hn
   | 1 =>
       calc
         Nat.log 2 1 = 0 := by rfl
         _ ≤ 1 := by numbers
-  | n' + 1 =>
+  | n' =>
+      unfold Nat.log
+      dsimp
 -/
 
 /-
