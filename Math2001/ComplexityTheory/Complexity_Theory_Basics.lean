@@ -102,6 +102,7 @@ theorem all_nat_ge_0 : ∀n : ℕ, n ≥ 0 := by
       _ = 1 := by ring
       _ ≥ 0 := by numbers
 
+-- Not needed. See pow_n_ge_1_from_c_eq_2 below
 theorem pow_2_n_ge_1 : forall_sufficiently_large n : ℕ, 2 ^ n ≥ 1 := by
   dsimp
   use 0
@@ -395,6 +396,24 @@ theorem pow_n_gt_1_from_c_eq_2 : ∀ c n : ℕ, (c > 1 ∧ n > 0) → c ^ n > 1 
         _ = c := by ring
         _ > 1 := hc
 
+theorem pow_n_ge_1_from_c_eq_2 : ∀ c n : ℕ, (c ≥ 1) → c ^ n ≥ 1 := by
+  intro c n hc
+  match n with
+  | 0 =>
+      calc
+        c ^ 0 = 1 := by ring
+        _ ≥ 1 := by numbers
+  | n' + 1 =>
+      have IH := pow_n_ge_1_from_c_eq_2 c (n')
+      have ht : c ^ n' ≥ 1 := by
+        apply IH
+        apply hc
+      calc
+        c ^ (n' + 1) = c * c ^ n' := by ring
+        _ ≥ c * 1 := by rel [ht]
+        _ = c := by ring
+        _ ≥ 1 := hc
+
 theorem pow_lt_of_exp_lt : ∀ c m n : ℕ, c > 1 → m < n → c ^ m < c ^ n := by
   intro c m n hc h
   match m, n with
@@ -520,6 +539,18 @@ theorem pow_2_n_ge_pow_n_k3 : ∀ k : ℕ, k ≥ 2 → forall_sufficiently_large
 /-
 This is an easier proof to start with
 -/
+theorem succ_n_lt_pow_2_succ_n : ∀ n : ℕ, n < 2 ^ n := by
+  intro n
+  simple_induction n with k IH
+  · numbers
+  · have h : 2 ^ k ≥ 1 := by
+      apply pow_n_ge_1_from_c_eq_2
+      numbers
+    calc
+      k + 1 < 2 ^ k + 1 := by rel [IH]
+      _ ≤ 2 ^ k + 2 ^ k := by rel [h]
+      _ = 2 ^ (k + 1) := by ring
+
 theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 256 →
   (Nat.log 2 n) ^ 2 < n ^ 2 := by
   intro n hn
@@ -549,23 +580,48 @@ theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 256 →
     n ≥ 256 := hn
     _ > 0 := by numbers
   apply h_n_gt_0
-  induction_from_starting_point n, hn with k kh IH
+  induction_from_starting_point n, hn with k hk IH
   · /-
     Next 2 lines suggested by Copilot with Claude Sonnet 4 agent
     -/
     have h : Nat.log 2 256 = 8 := by rfl
     rw [h]
     numbers
-  · have ht1 : 2 ^ (Nat.log 2 k) ≤ 2 ^ k := by
-      apply pow_le_of_exp_lt
+  · have h_k_gt_0 : k > 0 := calc
+      k ≥ 256 := hk
+      _ > 0 := by numbers
+    have hta : k ≠ 0 := by
+      apply ne_of_gt
+      apply h_k_gt_0
+    have ht1' : 2 ^ (Nat.log 2 k) ≤ k := by
+      apply Nat.pow_log_le_self
+      apply hta
+    have ht1 : 2 ^ (Nat.log 2 k) < 2 ^ k := by
+      apply pow_lt_of_exp_lt
       numbers
-      have hta : k ≠ 0 := by
-
-      have ht1' : 2 ^ (Nat.log 2 k) ≤ k := by
-        apply Nat.pow_log_le_self
       apply IH
-    have ht1' : k < 2 ^ k := calc
-      k = 2 ^ (Nat.log 2 k) := by
+    have IH' : (Nat.log 2 k) + 1 < k + 1 := by addarith [IH]
+    have ht2 : k < 2 ^ ((Nat.log 2 k) + 1) := by
+      apply Nat.lt_pow_succ_log_self
+      numbers
+    /-
+    calc
+      Nat.log 2 (k + 1) < (Nat.log 2 k) + 1 := by rw [duh]
+      --k < 2 ^ ((Nat.log 2 k) + 1) := by rw [Nat.lt_pow_succ_log_self]
+      _ < k + 1 := by rel [IH']
+    -/
+    apply Nat.log_lt_of_lt_pow
+    apply succ_ne_0
+    have h_k_gt_1 : k > 1 := calc
+      k ≥ 256 := hk
+      _ > 1 := by numbers
+    /-
+    calc
+      k + 1 < k + k := by rel [h_k_gt_1]
+      _ = 2 * k := by ring
+      _ < 2 * 2 ^ (Nat.log 2 k + 1) := by rel [ht2]
+    -/
+    apply succ_n_lt_pow_2_succ_n
 
 theorem pow_log_2_n_2_lt_n : ∀ n : ℕ, n ≥ 256 → Nat.succ (Nat.log 2 n) * Nat.log 2 n < n := by
   intro n hn
