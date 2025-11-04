@@ -367,6 +367,57 @@ theorem pow_le_of_exp_le : ∀ c m n : ℕ, c > 0 → m ≤ n → c ^ m ≤ c ^ 
         _ ≤ c * c ^ n' := by rel [ht]
         _ = c ^ (n' + 1) := by ring
 
+theorem pow_n_gt_1_from_c_eq_2 : ∀ c n : ℕ, (c > 1 ∧ n > 0) → c ^ n > 1 := by
+  intro c n h
+  obtain ⟨hc, hn⟩ := h
+  match n with
+  | 0 =>
+      numbers at hn
+  | 1 =>
+      calc
+        c ^ 1 = c := by ring
+        _ > 1 := hc
+  | n' + 2 =>
+      have IH := pow_n_gt_1_from_c_eq_2 c (n' + 1)
+      have ht : c ^ (n' + 1) > 1 := by
+        apply IH
+        constructor
+        apply hc
+        apply succ_gt_0
+      calc
+        c ^ (n' + 2) = c * c ^ (n' + 1) := by ring
+        _ > c * 1 := by rel [ht]
+        _ = c := by ring
+        _ > 1 := hc
+
+theorem pow_lt_of_exp_lt : ∀ c m n : ℕ, c > 1 → m < n → c ^ m < c ^ n := by
+  intro c m n hc h
+  match m, n with
+  | 0, 0 =>
+      numbers at h
+  | m' + 1, 0 =>
+      --apply all_nat_ge_0
+      have ht : ¬ m' + 1 < 0 := by
+        apply succ_not_le_0
+      contradiction
+  | 0, n' + 1 =>
+      --have IHn := pow_lt_of_exp_lt c 0 n'
+      apply pow_n_gt_1_from_c_eq_2
+      constructor
+      apply hc
+      apply h
+  | m' + 1, n' + 1 =>
+      have IHm := pow_lt_of_exp_lt c m' n'
+      have hmn : m' < n' := by addarith [h]
+      have ht : c ^ m' < c ^ n' := by
+        apply IHm
+        apply hc
+        apply hmn
+      calc
+        c ^ (m' + 1) = c * c ^ m' := by ring
+        _ < c * c ^ n' := by rel [ht]
+        _ = c ^ (n' + 1) := by ring
+
 /-
 #eval Nat.log 2 1
 theorem discrete_log_comp : ∀ n : ℕ, n > 0 → Nat.log 2 n ≤ n := by
