@@ -551,18 +551,18 @@ theorem succ_n_lt_pow_2_succ_n : ∀ n : ℕ, n < 2 ^ n := by
       _ ≤ 2 ^ k + 2 ^ k := by rel [h]
       _ = 2 ^ (k + 1) := by ring
 
-theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 256 →
+theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 2 →
   (Nat.log 2 n) < n := by
   intro n hn
   induction_from_starting_point n, hn with k hk IH
   · /-
     Next 2 lines suggested by Copilot with Claude Sonnet 4 agent
     -/
-    have h : Nat.log 2 256 = 8 := by rfl
+    have h : Nat.log 2 2 = 1 := by rfl
     rw [h]
     numbers
   · have h_k_gt_0 : k > 0 := calc
-      k ≥ 256 := hk
+      k ≥ 2 := hk
       _ > 0 := by numbers
     have hta : k ≠ 0 := by
       apply ne_of_gt
@@ -587,7 +587,7 @@ theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 256 →
     apply Nat.log_lt_of_lt_pow
     apply succ_ne_0
     have h_k_gt_1 : k > 1 := calc
-      k ≥ 256 := hk
+      k ≥ 2 := hk
       _ > 1 := by numbers
     /-
     calc
@@ -597,7 +597,7 @@ theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 256 →
     -/
     apply succ_n_lt_pow_2_succ_n
 
-theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 256 →
+theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 2 →
   (Nat.log 2 n) ^ 2 < n ^ 2 := by
   intro n hn
   apply poly_comp_lt
@@ -615,15 +615,11 @@ theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 256 →
     numbers
   rfl
   -/
-  have h_2_le_n : 2 ≤ n := by
-    calc
-      2 ≤ 256 := by numbers
-      _ ≤ n := hn
   apply Nat.log_pos
   numbers
-  apply h_2_le_n
+  apply hn
   have h_n_gt_0 : n > 0 := calc -- copied
-    n ≥ 256 := hn
+    n ≥ 2 := hn
     _ > 0 := by numbers
   apply h_n_gt_0
   apply log_2_n_lt_n
