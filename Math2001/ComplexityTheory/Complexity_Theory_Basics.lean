@@ -601,6 +601,18 @@ theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 2 →
     apply succ_ne_0
     apply succ_n_lt_pow_2_succ_n
 
+theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
+  (Nat.log 2 n) ^ 2 < n := by
+  intro n hn
+  induction_from_starting_point n, hn with k hk IH
+  · /-
+    Next 2 lines suggested by Copilot with Claude Sonnet 4 agent
+    -/
+    have h : Nat.log 2 32 = 5 := by rfl
+    rw [h]
+    numbers
+  · sorry
+
 theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 2 →
   (Nat.log 2 n) ^ 2 < n ^ 2 := by
   intro n hn
