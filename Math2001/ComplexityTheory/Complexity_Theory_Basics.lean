@@ -476,3 +476,267 @@ theorem pow_2_n_ge_pow_n_k : ∀ k : ℕ, forall_sufficiently_large n : ℕ, 2 ^
   | k' + 2 =>
       use (2 * k' ^ 2)
       intro n hn
+      sorry
+
+/-
+theorem pow_2_n_ge_pow_n_k2 : ∀ k : ℕ, k ≥ 2 → forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ k := by
+  intro k hk
+  use (2 * k ^ 2)
+  intro n hn
+  have ht : n ^ k ≤ 2 ^ n := by
+    rw [le_iff_eq_or_lt]
+  by_cases h1 : 2 ^ n = n ^ k
+  · calc
+      2 ^ n = n ^ k := h1
+      _ ≥ n ^ k := by extra
+  · --apply ge_of_ne
+    -- rw [le_iff_eq_or_lt] -- why doesn't this do anything on its own?
+    --have ht : 2 ^ n ≥ n ^ k := by
+    have ht : n ^ k ≤ 2 ^ n := by
+      rw [le_iff_eq_or_lt]
+
+    by_cases h2 : n < Nat.log 2 (n ^ k)
+    ·
+-/
+
+/-
+theorem pow_2_n_ge_pow_n_k3 : ∀ k : ℕ, k ≥ 2 → forall_sufficiently_large n : ℕ, n ^ k ≤ 2 ^ n := by
+  intro k hk
+  use (2 * k ^ 2)
+  intro n hn
+  have ht : n ^ k ≤ 2 ^ n := by
+    rw [le_iff_eq_or_lt]
+    by_cases h1 : 2 ^ n = n ^ k
+    · left
+      calc
+        n ^ k = 2 ^ n := by rw [h1]
+    · --apply ge_of_ne
+      -- rw [le_iff_eq_or_lt] -- why doesn't this do anything on its own?
+      --have ht : 2 ^ n ≥ n ^ k := by
+      sorry
+  sorry
+-/
+
+/-
+This is an easier proof to start with
+-/
+theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 256 →
+  (Nat.log 2 n) ^ 2 < n ^ 2 := by
+  intro n hn
+  apply poly_comp_lt
+  constructor
+  numbers
+  constructor
+  /-
+  unfold Nat.log
+  dsimp
+  have ht : 2 ≤ n ∧ 1 < 2 := by
+    constructor
+    calc
+      2 ≤ 256 := by numbers
+      _ ≤ n := hn
+    numbers
+  rfl
+  -/
+  have h_2_le_n : 2 ≤ n := by
+    calc
+      2 ≤ 256 := by numbers
+      _ ≤ n := hn
+  apply Nat.log_pos
+  numbers
+  apply h_2_le_n
+  have h_n_gt_0 : n > 0 := calc -- copied
+    n ≥ 256 := hn
+    _ > 0 := by numbers
+  apply h_n_gt_0
+  induction_from_starting_point n, hn with k kh IH
+  · /-
+    Next 2 lines suggested by Copilot with Claude Sonnet 4 agent
+    -/
+    have h : Nat.log 2 256 = 8 := by rfl
+    rw [h]
+    numbers
+  · have ht1 : 2 ^ (Nat.log 2 k) ≤ 2 ^ k := by
+      apply pow_le_of_exp_lt
+      numbers
+      have hta : k ≠ 0 := by
+
+      have ht1' : 2 ^ (Nat.log 2 k) ≤ k := by
+        apply Nat.pow_log_le_self
+      apply IH
+    have ht1' : k < 2 ^ k := calc
+      k = 2 ^ (Nat.log 2 k) := by
+
+theorem pow_log_2_n_2_lt_n : ∀ n : ℕ, n ≥ 256 → Nat.succ (Nat.log 2 n) * Nat.log 2 n < n := by
+  intro n hn
+  match n with
+  | 0 =>
+      numbers at hn
+  | 1 =>
+      numbers at hn
+  | n' + 2 =>
+      have IH1 := pow_log_2_n_2_lt_n n'
+      have IH2 := pow_log_2_n_2_lt_n (n' + 1)
+
+
+theorem pow_2_n_ge_pow_n_k5 : ∀ k n : ℕ, k ≥ 2 ∧ n ≥ 2 ^ k ^ 3 →
+  Nat.succ (Nat.log 2 n) * k < n := by
+  intro k n hkn
+  obtain ⟨hk, hn⟩ := hkn
+  -- have h_1_le_2 : 1 ≤ 2 := by numbers
+  /-
+  have ht0 : k * k ≥ 2 * 2 := by
+    calc
+      k * k ≥ 2 * k := by rel [hk]
+      _ ≥ 2 * 2 := by rel [hk]
+  -/
+  have ht2 : k * k * k ≥ 2 * 2 * 2 := by
+    calc
+      k * k * k ≥ 2 * 2 * k := by rel [hk]
+      _ ≥ 2 * 2 * 2:= by rel [hk]
+  have h_n_lower : n ≥ 256 := by
+    calc
+      n ≥ 2 ^ (k ^ 3) := hn
+      _ = 2 ^ (k * k * k) := by ring
+      _ ≥ 2 ^ (2 * 2 * 2) := by --rel [hk]
+          apply pow_le_of_exp_le
+          numbers
+          apply ht2
+      _ = 256 := by ring
+  have hn' : 2 ^ k ^ 3 ≤ n := hn
+  rw [Nat.pow_le_iff_le_log] at hn'
+  have ht3 : k ^ 2 < Nat.log 2 n := calc
+    k ^ 2 = 1 * k ^ 2 := by ring
+    _ < 1 * k ^ 2 + 1 * k ^ 2 := by extra
+    _ = 2 * k ^ 2 := by ring
+    _ ≤ k * k ^ 2 := by rel [hk]
+    _ = k ^ 3 := by ring
+    _ ≤ Nat.log 2 n := by rel [hn']
+  have ht4 : Nat.succ (Nat.log 2 n) * k = k * Nat.succ (Nat.log 2 n) := by ring
+  have h_1_lt_2 : 1 < 2 := by numbers
+  have ht5 : Nat.succ (Nat.log 2 n) * k < Nat.succ (Nat.log 2 n) * Nat.log 2 n :=
+    calc
+      Nat.succ (Nat.log 2 n) * k = Nat.succ (Nat.log 2 n) * k * 1 := by ring
+      _ < Nat.succ (Nat.log 2 n) * k * 2 := by rel [h_1_lt_2]
+      _ ≤ Nat.succ (Nat.log 2 n) * k * k := by rel [hk]
+      _ = Nat.succ (Nat.log 2 n) * k ^ 2 := by ring
+      _ < Nat.succ (Nat.log 2 n) * Nat.log 2 n := by rel [ht3]
+  have ht5b : Nat.succ (Nat.log 2 n) * Nat.log 2 n = (Nat.log 2 n + 1) * Nat.log 2 n := by
+    -- unfold Nat.succ
+    rfl -- what the heck? how does this work?
+  calc
+    Nat.succ (Nat.log 2 n) * k < Nat.succ (Nat.log 2 n) * Nat.log 2 n := ht5
+    _ < n := by
+      apply pow_log_2_n_2_lt_n
+      apply h_n_lower
+  numbers
+  -- copied from pow_2_n_ge_pow_n_k4
+  have h_n_gt_0 : n > 0 := calc
+        n ≥ 256 := h_n_lower
+        _ > 0 := by numbers
+  have ht7: n < 0 ∨ n > 0 := by
+    -- apply lt_or_gt_of_ne
+    right
+    apply h_n_gt_0
+  rw [lt_or_lt_iff_ne] at ht7
+  apply ht7
+
+/-
+Use a power of 2 in the lower bound for n to simplify Nat.log arguments
+-/
+theorem pow_2_n_ge_pow_n_k4 : ∀ k : ℕ, k ≥ 2 → forall_sufficiently_large n : ℕ, n ^ k ≤ 2 ^ n := by
+  intro k hk
+  -- use (2 * k ^ 2)
+  use 2 ^ (k ^ 2)
+  intro n hn
+  rw [le_iff_eq_or_lt]
+  by_cases h1 : n ^ k = 2 ^ n
+  · left
+    apply h1
+  · right
+    --apply ge_of_ne
+    -- rw [le_iff_eq_or_lt] -- why doesn't this do anything on its own?
+    have ht1 : 2 ^ (k * k) ≥ 2 ^ (2 * 2) := by
+      apply pow_le_of_exp_le
+      · numbers
+      · calc
+          k * k ≥ 2 * k := by rel [hk] -- can't do this in 1 step
+          _ ≥ 2 * 2 := by rel [hk]
+    have ht2 : n ≥ 16 := by
+      calc
+      /-
+        n ≥ 2 * k ^ 2 := hn
+        _ ≥ 2 * 2 ^ 2 := by rel [hk]
+      -/
+        n ≥ 2 ^ (k ^ 2) := hn
+        _ = 2 ^ (k * k) := by ring
+        _ ≥ 2 ^ (2 * 2) := ht1
+        _ = 16 := by ring
+    have h_n_gt_0 : n > 0 := calc
+        n ≥ 16 := ht2
+        _ > 0 := by numbers
+    have ht7: n < 0 ∨ n > 0 := by
+      -- apply lt_or_gt_of_ne
+      right
+      apply h_n_gt_0
+    rw [lt_or_lt_iff_ne] at ht7
+    /-
+    have ht3 : k ^ 2 ≤ Nat.log 2 n := by
+      --apply Nat.pow_le_iff_le_log 2 (1 < 2) (n ≠ 0)
+      rw [Nat.pow_le_iff_le_log]
+      sorry
+    -/
+    have ht4 : 2 ^ 4 ≤ n := calc
+      2 ^ 4 = 16 := by ring
+      _ ≤ n := ht2
+    rw [Nat.pow_le_iff_le_log] at ht4
+    /-
+    have ht3 : k ^ 2 ≤ Nat.log 2 n := by
+      rw [Nat.pow_le_iff_le_log]
+    -/
+    have hn' : 2 ^ k ^ 2 ≤ n := hn
+    rw [Nat.pow_le_iff_le_log] at hn'
+    /-
+    I want n ≤ 2 ^ (Nat.log 2 n) + 1
+    -/
+    have h_n_upper_bound : n < 2 ^ (Nat.log 2 n).succ := by
+      apply Nat.lt_pow_succ_log_self
+      numbers
+    have ht5 : n ^ k < (2 ^ Nat.succ (Nat.log 2 n)) ^ k := by
+      apply poly_comp_lt k n (2 ^ Nat.succ (Nat.log 2 n))
+      constructor
+      calc
+        k ≥ 2 := hk
+        _ > 0 := by numbers
+      constructor
+      apply h_n_gt_0
+      --apply h_n_upper_bound
+      calc
+        -- 2 ^ Nat.succ (Nat.log 2 n) = 2 * 2 ^ (Nat.log 2 n) := by ring
+        2 ^ Nat.succ (Nat.log 2 n) > n := h_n_upper_bound
+        _ > 0 := by extra
+      apply h_n_upper_bound
+    /-
+    have ht8 : Nat.succ (Nat.log 2 n) * k < n := by
+      calc
+        (Nat.succ (Nat.log 2 n)) * k < (Nat.succ (Nat.log 2 n) * k) * k := by extra
+        _ = Nat.succ (Nat.log 2 n) * k ^ 2 := by ring
+    -/
+    have ht6 : (2 ^ Nat.succ (Nat.log 2 n)) ^ k < 2 ^ n := by
+      calc
+        (2 ^ Nat.succ (Nat.log 2 n)) ^ k = 2 ^ (Nat.succ (Nat.log 2 n) * k) := by ring
+        _ < 2 ^ n := by
+          apply pow_lt_of_exp_lt
+          numbers
+          --apply ht8
+          apply pow_2_n_ge_pow_n_k5
+          constructor
+          apply hk
+          sorry
+    calc
+      n ^ k < (2 ^ Nat.succ (Nat.log 2 n)) ^ k := ht5
+      _ < 2 ^ n := ht6
+    numbers
+    apply ht7
+    numbers
+    apply ht7
