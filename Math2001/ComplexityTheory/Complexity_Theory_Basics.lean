@@ -1,5 +1,6 @@
 /- Copyright (c) Heather Macbeth, 2023.  All rights reserved. -/
 import Mathlib.Data.Real.Basic
+import Mathlib.Order.Basic
 import Mathlib.Data.Nat.Log
 -- TODO: Remove Heather's dependencies
 import Library.Basic
@@ -601,6 +602,140 @@ theorem log_2_n_lt_n : ∀ n : ℕ, n ≥ 2 →
     apply succ_ne_0
     apply succ_n_lt_pow_2_succ_n
 
+def is_power_of_2 (n : ℕ) : Prop := n = 2 ^ (Nat.log 2 n)
+def is_power_of_2' (n : ℕ) : Prop := ∃ k : ℕ, n = 2 ^ k
+
+theorem succ_even_pow_of_2_lt_pow_succ : ∀ n : ℕ, n > 0 → 2 ^ n + 1 < 2 ^ (n + 1) := by
+  intro n hn
+  induction_from_starting_point n, hn with k hk IH
+  · numbers
+  · have ht : 2 ^ k < 2 ^ (k + 1) := by
+      apply pow_lt_of_exp_lt
+      numbers
+      extra
+    calc
+      2 ^ (k + 1) + 1 = 2 * 2 ^ k + 1 := by ring
+      --_ < 2 * 2 ^ k + 1 + 1 := by extra
+      _ = 2 ^ k + (2 ^ k + 1) := by ring
+      _ < 2 ^ k + 2 ^ (k + 1) := by rel [IH]
+      _ < 2 ^ (k + 1) + 2 ^ (k + 1) := by rel [ht]
+      _ = 2 * 2 ^ (k + 1) := by ring
+      _ = 2 ^ (k + 1 + 1) := by ring
+
+theorem eq_implies_log_eq : ∀ m n : ℕ, m = n → Nat.log 2 m = Nat.log 2 n := by
+  intro m n hmn
+  calc
+    Nat.log 2 m = Nat.log 2 n := by rw [hmn]
+
+theorem log_succ_eq_succ_log : ∀ n : ℕ, n > 1 → is_power_of_2' n → Nat.log 2 (n + 1) = (Nat.log 2 n) := by
+  intro n hn h
+  obtain ⟨k, h⟩ := h
+  have hn_ge_pow_2_k : 2 ^ k ≤ n := calc
+    n = 2 ^ k := h
+    _ ≥ 2 ^ k := by extra
+  --rw [Nat.pow_le_iff_le_log] at hn_ge_pow_2_k
+  have ha : 2 ^ k > 0 := calc
+    2 ^ k ≥ 1 := by
+      apply pow_n_ge_1_from_c_eq_2
+      numbers
+    _ > 0 := by numbers
+  have hb : 2 ^ k ≠ 0 := by
+    apply ne_of_gt
+    apply ha
+  have hc : n < 2 ^ (k + 1) := calc
+    n = 2 ^ k := h
+    _ = 1 * 2 ^ k := by ring
+    --_ < 2 ^ k + 2 ^ k := by extra
+    _ < 2 * 2 ^ k := by
+      /-
+      Copilot prompt: which theorem shows that 1 * x < 2 * x when x > 0?
+      -/
+      apply mul_lt_mul_of_pos_right
+      numbers
+      apply ha
+    _ = 2 ^ (k + 1) := by ring
+  have h0 : Nat.log 2 n = k := by -- TODO: use Nat.log_pow
+    rw [Nat.log_eq_iff]
+    constructor
+    apply hn_ge_pow_2_k
+    apply hc
+    right
+    constructor
+    numbers
+    apply ne_of_gt
+    calc
+      0 < 2 ^ k := ha
+      _ = n := by rw [h]
+  by_cases hk : 0 < k
+  · have h1: 2 ^ k + 1 < 2 ^ (k + 1) := by
+      apply succ_even_pow_of_2_lt_pow_succ
+      apply hk
+    --apply Nat.log_lt_of_lt_pow at h1
+    have h2 : Nat.log 2 (2 ^ k + 1) < k + 1 := by
+      apply Nat.log_lt_of_lt_pow
+      apply succ_ne_0
+      apply h1
+    have h3 : Nat.log 2 (n + 1) < k + 1 := calc
+      Nat.log 2 (n + 1) = Nat.log 2 (2 ^ k + 1) := by rw [h]
+      _ < k + 1 := h2
+    rw [h0]
+    rw [Nat.lt_succ_iff] at h3 -- See example 6.2.5
+    have h4 : 2 ^ k ≤ 2 ^ k + 1 := by extra
+    have h5 : Nat.log 2 (2 ^ k) ≤ Nat.log 2 (2 ^ k + 1) := by
+      apply Nat.log_mono_right
+      apply h4
+    have h5a : Nat.log 2 n = Nat.log 2 (2 ^ k) := by
+      apply eq_implies_log_eq
+      apply h
+    have h5b : Nat.log 2 (n + 1) = Nat.log 2 (2 ^ k + 1) := by
+      apply eq_implies_log_eq
+      calc
+        n + 1 = 2 ^ k + 1 := by rw [h]
+        _ = 2 ^ k + 1 := by ring -- why is this necessary?
+    have h5c : Nat.log 2 n ≤ Nat.log 2 (n + 1) := calc
+      Nat.log 2 n = Nat.log 2 (2 ^ k) := h5a
+      _ ≤ Nat.log 2 (2 ^ k + 1) := h5
+      _ = Nat.log 2 (n + 1) := by rw [h5b]
+    have h6 : k ≤ Nat.log 2 (n + 1) := calc
+      k = Nat.log 2 n := by rw [h0]
+      _ ≤ Nat.log 2 (n + 1) := h5c
+    -- combine h3 and h6
+    rw [eq_iff_le_not_lt] -- my first import at top of this file
+    constructor
+    · apply h3
+    · apply Nat.not_lt_of_ge
+      apply h6
+  · have hk' : k = 0 := by
+      apply Nat.eq_zero_of_not_pos
+      apply hk
+    have hn' : n = 1 := calc
+        n = 2 ^ k := h
+        _ = 2 ^ 0 := by rw [hk']
+        _ = 1 := by ring
+    /- We need n > 1
+    rw [hn']
+    have hl : Nat.log 2 (1 + 1) = 1 := by rfl
+    have hr : Nat.log 2 1 = 0 := by rfl
+    calc
+      Nat.log 2 (1 + 1) = 1 := by rfl
+      _ = Nat.log 2 1 := by rfl
+    -/
+    have hbad : 1 < 1 := calc
+      1 < n := hn
+      _ = 1 := by rw [hn']
+    numbers at hbad
+
+/-
+I want to say that Nat.log 2 (n + 1) = Nat.log 2 n. This holds if n + 1 is not a power of 2.
+Otherwise, Nat.log 2 (n + 1) = (Nat.log 2 n) + 1
+-/
+theorem log_smth1 : ∀ k n : ℕ, k < n → n = Nat.log 2 (2 ^ n + k) := by
+  intro k n hkn
+  sorry
+
+theorem log_smth0 : ∀ k n : ℕ, k ≥ 5 ∧ n = 2 ^ k → Nat.log 2 (k + 1) = Nat.log 2 n := by
+  sorry
+
 theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
   (Nat.log 2 n) ^ 2 < n := by
   intro n hn
@@ -611,7 +746,17 @@ theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
     have h : Nat.log 2 32 = 5 := by rfl
     rw [h]
     numbers
-  · sorry
+  · have h1 : Nat.log 2 k < k := by
+      apply log_2_n_lt_n
+      calc
+        k ≥ 32 := hk
+        _ ≥ 2 := by numbers
+    by_cases h2 : k = 2 ^ Nat.log 2 k
+    · have h3 : Nat.log 2 (k + 1) = Nat.log 2 k := by
+        -- we need a theorem for this
+        sorry
+      sorry
+    sorry
 
 theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 2 →
   (Nat.log 2 n) ^ 2 < n ^ 2 := by
