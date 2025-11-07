@@ -814,11 +814,136 @@ theorem log_unchanged_adding_smaller_num_to_pow_2' : ∀ m n : ℕ, n > 1 → m 
     m < n := hmn
     _ = 2 ^ k := by rw [hn]
 
+/-
+new idea: why not just obtain the exact power k that's the log of n instead of
+complex proofs?
+-/
+theorem not_pow_of_2_implies_between_consec_pows :
+    ∀ n : ℕ, n > 0 → ¬ is_power_of_2' n → ∃ k : ℕ, 2 ^ k < n ∧ k < 2 ^ (k + 1) := by
+  intro n hn0 hn
+  use Nat.log 2 n
+  -- unfold is_power_of_2' at hn
+  constructor
+  · have h1 : 2 ^ Nat.log 2 n ≤ n := by
+      apply Nat.pow_log_le_self
+      apply ne_of_gt
+      apply hn0
+    /-
+    apply le_of_eq_or_lt at h1
+    apply le_of_lt_or_eq at h1
+    -/
+    apply lt_or_eq_of_le at h1
+    obtain h1l | h1r := h1
+    · apply h1l
+    · have h_contra : is_power_of_2' n := by
+        use Nat.log 2 n
+        rw [h1r]
+      contradiction
+  · calc
+      Nat.log 2 n < n := by
+        apply log_2_n_lt_n
+        by_cases ht : n ≥ 2
+        · apply ht
+        · apply lt_of_not_ge at ht
+          interval_cases n
+          have h_contra: is_power_of_2' 1 := by
+            use 0
+            ring
+          contradiction
+      _ < 2 ^ (Nat.log 2 n + 1) := by
+        apply Nat.lt_pow_succ_log_self
+        numbers
+
+theorem not_succ_is_pow_of_2_implies_log_succ_eq_log :
+    ∀ n : ℕ, ¬ is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n := by
+  intro n h
+  -- Note that n ≥ 5, given the hypothesis
+  by_cases h0 : n > 1
+  · by_cases h1 : is_power_of_2' n
+    · apply log_unchanged_adding_smaller_num_to_pow_2'
+      apply h0
+      apply h0
+      apply h1
+    · -- ¬is_power_of_2' n
+      have htn : ∃ k : ℕ, 2 ^ k < n ∧ k < 2 ^ (k + 1) := by
+        apply not_pow_of_2_implies_between_consec_pows
+        calc
+          n > 1 := h0
+          _ > 0 := by numbers
+        apply h1
+      obtain ⟨k, htnl, htnr⟩ := htn
+
+      /-
+      have ht_succ_n : ∃ k : ℕ, 2 ^ k < n + 1 ∧ k < 2 ^ (k + 1) := by
+        apply not_pow_of_2_implies_between_consec_pows
+        apply succ_gt_0
+        apply h
+      obtain ⟨k', ht_succ_n_l, ht_succ_n_r⟩ := ht_succ_n
+      -/
+      have ht1 : 2 ^ k < n + 1 := calc
+        2 ^ k < n := htnl
+        _ < n + 1 := by extra
+      have h_upper : n + 1 < 2 ^ (k + 1) := by
+        by_cases h2 : n + 1 = 2 ^ (k + 1)
+        · -- h2 : n + 1 = 2 ^ (k + 1)
+          have h_contra : is_power_of_2' (n + 1) := by
+            use k + 1
+            apply h2
+          contradiction
+        · -- h2 : ¬n + 1 = 2 ^ (k + 1)
+          -- whoa, this works even though h2 does not explicitly use the ≠ symbol!
+          apply lt_or_gt_of_ne at h2
+          obtain h2l | h2r := h2
+          · apply h2l
+          have h3a : 2 ^ (k + 1) < n + 1 := h2r
+          have h3 : 2 ^ (k + 1) ≤ n := by
+            rw [Nat.lt_succ_iff] at h3a-- See example 6.2.5
+            apply h3a
+          have h_contra : n + 1 - 1 > 2 ^ (k + 1) - 1 := by
+            apply Nat.lt_succ_of_le
+      /-
+      have ht1 : n < 2 ^ (Nat.log 2 n + 1) := by
+        apply Nat.lt_pow_succ_log_self
+        numbers
+      have ht2 : n + 1 < 2 ^ (Nat.log 2 (n + 1) + 1) := by
+        apply Nat.lt_pow_succ_log_self
+        numbers
+      have h2 : 2 ^ (Nat.log 2 n) < n := by
+        apply lt_of_ne
+        sorry
+      have h3 : 2 ^ (Nat.log 2 n) < n + 1 := by
+        calc
+          2 ^ (Nat.log 2 n) < n := h2
+          _ < n + 1 := by extra
+      have h4 : n < 2 ^ (Nat.log 2 n) + 1 := by
+        sorry
+      have h5 : n + 1 < 2 ^ (Nat.log 2 n) + 1 := by
+        sorry
+      -/
+      sorry
+  apply le_of_not_gt at h0
+  interval_cases n
+  rfl
+  have h_contra : is_power_of_2' (1 + 1) := by
+    use 1
+    ring
+  contradiction
+
+theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
+    ∀ n : ℕ, is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n + 1 := by
+  intro n h
+  obtain ⟨k, hn2⟩ := h
+  -- apply log_succ_eq_succ_log
   sorry
 
-theorem not_n_and_succ_pow_of_2_implies_log_succ_eq_log : ∀ n : ℕ, n ≥ 5 ∧ ¬ is_power_of_2' n ∧ ¬ is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n := by
+theorem not_n_and_succ_pow_of_2_implies_log_succ_eq_log :
+    ∀ n : ℕ, n ≥ 5 ∧ ¬ is_power_of_2' n ∧ ¬ is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n := by
   intro n hn
   obtain ⟨hn1, hn2, hn3⟩ := hn
+  /-
+  apply not_succ_is_pow_of_2_implies_log_succ_eq_log
+  apply hn3
+  -/
   induction_from_starting_point n, hn1 with k hk IH
   · /-
     have ha : Nat.log 2 (5 + 1) = 2 := by rfl
