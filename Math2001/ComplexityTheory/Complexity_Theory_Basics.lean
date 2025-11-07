@@ -819,7 +819,7 @@ new idea: why not just obtain the exact power k that's the log of n instead of
 complex proofs?
 -/
 theorem not_pow_of_2_implies_between_consec_pows :
-    ∀ n : ℕ, n > 0 → ¬ is_power_of_2' n → ∃ k : ℕ, 2 ^ k < n ∧ k < 2 ^ (k + 1) := by
+    ∀ n : ℕ, n > 0 → ¬ is_power_of_2' n → ∃ k : ℕ, 2 ^ k < n ∧ n < 2 ^ (k + 1) := by
   intro n hn0 hn
   use Nat.log 2 n
   -- unfold is_power_of_2' at hn
@@ -840,17 +840,7 @@ theorem not_pow_of_2_implies_between_consec_pows :
         rw [h1r]
       contradiction
   · calc
-      Nat.log 2 n < n := by
-        apply log_2_n_lt_n
-        by_cases ht : n ≥ 2
-        · apply ht
-        · apply lt_of_not_ge at ht
-          interval_cases n
-          have h_contra: is_power_of_2' 1 := by
-            use 0
-            ring
-          contradiction
-      _ < 2 ^ (Nat.log 2 n + 1) := by
+      n < 2 ^ (Nat.log 2 n + 1) := by
         apply Nat.lt_pow_succ_log_self
         numbers
 
@@ -865,7 +855,7 @@ theorem not_succ_is_pow_of_2_implies_log_succ_eq_log :
       apply h0
       apply h1
     · -- ¬is_power_of_2' n
-      have htn : ∃ k : ℕ, 2 ^ k < n ∧ k < 2 ^ (k + 1) := by
+      have htn : ∃ k : ℕ, 2 ^ k < n ∧ n < 2 ^ (k + 1) := by
         apply not_pow_of_2_implies_between_consec_pows
         calc
           n > 1 := h0
