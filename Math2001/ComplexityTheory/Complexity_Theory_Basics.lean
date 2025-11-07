@@ -771,10 +771,49 @@ theorem log_unchanged_adding_smaller_num_to_pow_2 : ∀ m n : ℕ, n > 1 → m <
       rw [Nat.log_pow]
       numbers
 
-theorem not_succ_is_pow_of_2_implies_log_succ_eq_log : ∀ n : ℕ, ¬ is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n := by
-  sorry
+-- This is actually what I wanted
+theorem log_unchanged_adding_smaller_num_to_pow_2' : ∀ m n : ℕ, n > 1 → m < n →
+    is_power_of_2' n → Nat.log 2 (n + m) = Nat.log 2 n := by
+  intro m n hn hmn h
+  obtain ⟨k, hn⟩ := h
+  -- copied ha, hn_ge_pow_2_k, hc and h0 from proof of log_succ_eq_succ_log
+  have ha : 2 ^ k > 0 := calc
+    2 ^ k ≥ 1 := by
+      apply pow_n_ge_1_from_c_eq_2
+      numbers
+    _ > 0 := by numbers
+  have hn_ge_pow_2_k : 2 ^ k ≤ n := calc
+    n = 2 ^ k := hn
+    _ ≥ 2 ^ k := by extra
+  have hc : n < 2 ^ (k + 1) := calc
+    n = 2 ^ k := hn
+    _ = 1 * 2 ^ k := by ring
+    --_ < 2 ^ k + 2 ^ k := by extra
+    _ < 2 * 2 ^ k := by
+      apply mul_lt_mul_of_pos_right
+      numbers
+      apply ha
+    _ = 2 ^ (k + 1) := by ring
+  have h0 : Nat.log 2 n = k := by -- TODO: use Nat.log_pow
+    rw [Nat.log_eq_iff]
+    constructor
+    apply hn_ge_pow_2_k
+    apply hc
+    right
+    constructor
+    numbers
+    apply ne_of_gt
+    calc
+      0 < 2 ^ k := ha
+      _ = n := by rw [hn]
+  rw [h0, hn]
+  --have h1 : Nat.log 2 (2 ^ k + m) = Nat.log 2 n := by
+  apply log_pow_add_of_lt
+  numbers
+  calc
+    m < n := hmn
+    _ = 2 ^ k := by rw [hn]
 
-theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log : ∀ n : ℕ, is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n + 1 := by
   sorry
 
 theorem not_n_and_succ_pow_of_2_implies_log_succ_eq_log : ∀ n : ℕ, n ≥ 5 ∧ ¬ is_power_of_2' n ∧ ¬ is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n := by
