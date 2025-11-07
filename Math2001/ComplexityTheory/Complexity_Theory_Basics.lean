@@ -725,16 +725,74 @@ theorem log_succ_eq_succ_log : ∀ n : ℕ, n > 1 → is_power_of_2' n → Nat.l
       _ = 1 := by rw [hn']
     numbers at hbad
 
+theorem log_pow_add_of_lt {b x y : ℕ} (hb : 1 < b) (hy : y < b ^ x) :
+    Nat.log b (b ^ x + y) = x := by
+  apply Nat.log_eq_of_pow_le_of_lt_pow
+  · -- Prove b ^ x ≤ b ^ x + y
+    -- exact le_add_right (b ^ x) y
+    extra
+  · -- Prove b ^ x + y < b ^ (x + 1)
+    /-
+    calc
+      b ^ x + y < b ^ x + b ^ x := by rel [hy]
+      _ = 2 * b ^ x := by ring
+      _ ≤ b * b ^ x := by rel [hb]
+      _ = b ^ (x + 1) := by ring
+    -/
+    -- my proof:
+    have h2 : Nat.succ 1 ≤ b := by
+      rw [Nat.succ_le]
+      apply hb
+    calc
+      b ^ x + y < b ^ x + b ^ x := by rel [hy]
+      _ = 2 * b ^ x := by ring
+      _ ≤ b * b ^ x := by rel [h2]
+      _ = b ^ (x + 1) := by ring
+
 /-
 I want to say that Nat.log 2 (n + 1) = Nat.log 2 n. This holds if n + 1 is not a power of 2.
 Otherwise, Nat.log 2 (n + 1) = (Nat.log 2 n) + 1
+
+log_succ_eq_succ_log (above) shows this when n > 1 is a power of two
+
+The proof below should work for any base b > 1. Is it in the standard library?
 -/
-theorem log_smth1 : ∀ k n : ℕ, k < n → n = Nat.log 2 (2 ^ n + k) := by
-  intro k n hkn
+theorem log_unchanged_adding_smaller_num_to_pow_2 : ∀ m n : ℕ, n > 1 → m < n →
+    is_power_of_2' n → Nat.log 2 (2 ^ n + m) = Nat.log 2 (2 ^ n) := by
+  intro m n hn hmn h
+  calc
+    Nat.log 2 (2 ^ n + m) = n := by
+      apply log_pow_add_of_lt
+      numbers
+      calc
+        m < n := hmn
+        _ < 2 ^ n := by apply succ_n_lt_pow_2_succ_n
+    _ = Nat.log 2 (2 ^ n) := by
+      rw [Nat.log_pow]
+      numbers
+
+theorem not_succ_is_pow_of_2_implies_log_succ_eq_log : ∀ n : ℕ, ¬ is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n := by
   sorry
 
-theorem log_smth0 : ∀ k n : ℕ, k ≥ 5 ∧ n = 2 ^ k → Nat.log 2 (k + 1) = Nat.log 2 n := by
+theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log : ∀ n : ℕ, is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n + 1 := by
   sorry
+
+theorem not_n_and_succ_pow_of_2_implies_log_succ_eq_log : ∀ n : ℕ, n ≥ 5 ∧ ¬ is_power_of_2' n ∧ ¬ is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n := by
+  intro n hn
+  obtain ⟨hn1, hn2, hn3⟩ := hn
+  induction_from_starting_point n, hn1 with k hk IH
+  · /-
+    have ha : Nat.log 2 (5 + 1) = 2 := by rfl
+    have hb : Nat.log 2 5 = 2 := by rfl
+    -/
+    rfl
+  by_cases h : is_power_of_2' k
+  · apply log_succ_succ_eq_log_succ_log
+    calc
+      k ≥ 5 := hk
+      _ ≥ 4 := by numbers
+    apply h
+  · sorry
 
 theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
   (Nat.log 2 n) ^ 2 < n := by
@@ -746,17 +804,67 @@ theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
     have h : Nat.log 2 32 = 5 := by rfl
     rw [h]
     numbers
-  · have h1 : Nat.log 2 k < k := by
+  · /-
+    have h1 : Nat.log 2 k < k := by
       apply log_2_n_lt_n
       calc
         k ≥ 32 := hk
         _ ≥ 2 := by numbers
-    by_cases h2 : k = 2 ^ Nat.log 2 k
-    · have h3 : Nat.log 2 (k + 1) = Nat.log 2 k := by
+    -/
+    /-
+    by_cases h2 : is_power_of_2' k
+    · rw [log_succ_eq_succ_log]
+      calc
+        Nat.log 2 k ^ 2 < k := IH
+        _ < k + 1 := by extra
+      calc
+        k ≥ 32 := hk
+        _ > 1 := by numbers
+      apply h2
+    · -- by_cases h3 : is_power_of_2' (k + 1)
+      have h1 : Nat.log 2 k ≤ Nat.log 2 (k + 1) := calc
+        Nat.log 2 n = Nat.log 2 (2 ^ k) := h5a
+        _ ≤ Nat.log 2 (2 ^ k + 1) := h5
+        _ = Nat.log 2 (n + 1) := by rw [h5b]
+      have h3 : Nat.log 2 (k + 1) = Nat.log 2 k := by
         -- we need a theorem for this
         sorry
       sorry
-    sorry
+    -/
+    by_cases h2 : is_power_of_2' (k + 1)
+    · obtain ⟨c, h⟩ := h2
+      have h3 : k < 2 ^ c := calc
+        k < k + 1 := by extra
+        _ = 2 ^ c := h
+      rw [Nat.lt_pow_iff_log_lt] at h3
+      sorry
+      numbers
+      apply ne_of_gt
+      calc
+          k ≥ 32 := hk
+          _ > 0 := by numbers
+    · by_cases h3 : is_power_of_2' k
+      · rw [log_succ_eq_succ_log]
+        calc
+          Nat.log 2 k ^ 2 < k := IH
+          _ < k + 1 := by extra
+        calc
+          k ≥ 32 := hk
+          _ > 1 := by numbers
+        apply h3
+      · have h4 : Nat.log 2 (k + 1) = Nat.log 2 k := by
+          apply not_n_and_succ_pow_of_2_implies_log_succ_eq_log
+          constructor
+          calc
+            k ≥ 32 := hk
+            _ ≥ 5 := by numbers
+          constructor
+          apply h3
+          apply h2
+        calc
+          Nat.log 2 (k + 1) ^ 2 =  Nat.log 2 k ^ 2 := by rw [h4]
+          _ < k := by rel [IH]
+          _ < k + 1 := by extra
 
 theorem pow_log_2_n_2_lt_pow_n_2 : ∀ n : ℕ, n ≥ 2 →
   (Nat.log 2 n) ^ 2 < n ^ 2 := by
