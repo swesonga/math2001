@@ -850,11 +850,12 @@ theorem not_succ_is_pow_of_2_implies_log_succ_eq_log :
   -- Note that n ≥ 5, given the hypothesis
   by_cases h0 : n > 1
   · by_cases h1 : is_power_of_2' n
-    · apply log_unchanged_adding_smaller_num_to_pow_2'
+    · -- h1 : is_power_of_2' n
+      apply log_unchanged_adding_smaller_num_to_pow_2'
       apply h0
       apply h0
       apply h1
-    · -- ¬is_power_of_2' n
+    · -- h1 : ¬is_power_of_2' n
       have htn : ∃ k : ℕ, 2 ^ k < n ∧ n < 2 ^ (k + 1) := by
         apply not_pow_of_2_implies_between_consec_pows
         calc
@@ -889,8 +890,14 @@ theorem not_succ_is_pow_of_2_implies_log_succ_eq_log :
           have h3 : 2 ^ (k + 1) ≤ n := by
             rw [Nat.lt_succ_iff] at h3a-- See example 6.2.5
             apply h3a
-          have h_contra : n + 1 - 1 > 2 ^ (k + 1) - 1 := by
-            apply Nat.lt_succ_of_le
+          have h_contra1 : n < n := calc
+            n < 2 ^ (k + 1) := htnr
+            _ ≤ n := h3
+          have h_contra2 : n = n := by ring
+          have h_contra3 : n ≠ n := by
+            apply ne_of_lt
+            apply h_contra1
+          contradiction
       /-
       have ht1 : n < 2 ^ (Nat.log 2 n + 1) := by
         apply Nat.lt_pow_succ_log_self
@@ -910,7 +917,46 @@ theorem not_succ_is_pow_of_2_implies_log_succ_eq_log :
       have h5 : n + 1 < 2 ^ (Nat.log 2 n) + 1 := by
         sorry
       -/
-      sorry
+      have h2 : Nat.log 2 (n + 1) < k + 1 := by
+        apply Nat.log_lt_of_lt_pow
+        apply succ_ne_0
+        apply h_upper
+      rw [Nat.lt_succ_iff] at h2 -- See example 6.2.5
+      have h3 : Nat.log 2 n < k + 1 := by
+        apply Nat.log_lt_of_lt_pow
+        apply ne_of_gt
+        calc
+          n > 1 := h0
+          _ > 0 := by numbers
+        apply Nat.lt_of_succ_lt
+        apply h_upper
+      rw [Nat.lt_succ_iff] at h3 -- See example 6.2.5
+      have h4 : k ≤ Nat.log 2 n := by
+        apply Nat.le_log_of_pow_le
+        numbers
+        apply le_of_lt
+        apply htnl
+      have h5: k = Nat.log 2 n := by
+        rw [le_antisymm_iff]
+        constructor
+        apply h4
+        apply h3
+      /-
+      have h_contra : is_power_of_2' n := by
+        use k
+        calc
+          2 ^ k = 2 ^ Nat.log 2 n := by rw [h5]
+          _ = n := by
+            apply Nat.
+      -/
+      -- should have tried this earlier
+      rw [le_antisymm_iff]
+      constructor
+      calc
+        Nat.log 2 (n + 1) ≤ k := h2
+        _ = Nat.log 2 n := h5
+      apply Nat.log_mono_right
+      extra
   apply le_of_not_gt at h0
   interval_cases n
   rfl
