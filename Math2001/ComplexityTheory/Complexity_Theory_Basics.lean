@@ -1014,14 +1014,14 @@ theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
       rw [h3] -- why doesn't apply h3 work?
     _ = Nat.log 2 n + 1 := by rw [h1]
 
-theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
+theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 17 →
   (Nat.log 2 n) ^ 2 < n := by
   intro n hn
   induction_from_starting_point n, hn with k hk IH
   · /-
     Next 2 lines suggested by Copilot with Claude Sonnet 4 agent
     -/
-    have h : Nat.log 2 32 = 5 := by rfl
+    have h : Nat.log 2 17 = 4 := by rfl
     rw [h]
     numbers
   · /-
@@ -1055,6 +1055,9 @@ theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
     · -- h2 : is_power_of_2' (k + 1)
       have ht : Nat.log 2 (k + 1) = Nat.log 2 k + 1 := by
         apply succ_is_pow_of_2_implies_log_succ_eq_succ_log
+        calc
+          k ≥ 17 := hk
+          _ > 0 := by numbers
         apply h2
       obtain ⟨c, h⟩ := h2
       have h3 : k < 2 ^ c := calc
@@ -1077,7 +1080,7 @@ theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
           Nat.log 2 k ^ 2 < k := IH
           _ < k + 1 := by extra
         calc
-          k ≥ 32 := hk
+          k ≥ 17 := hk
           _ > 1 := by numbers
         apply h3
       · have h4 : Nat.log 2 (k + 1) = Nat.log 2 k := by
