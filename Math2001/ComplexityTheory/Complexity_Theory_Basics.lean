@@ -253,14 +253,25 @@ theorem pow_comp : ∀ m n : ℕ, m ≤ n → 2 ^ m ≤ 2 ^ n := by
   | 0, n' + 1 =>
       apply pow_2_n_ge_1'
 
+theorem pow_c_n_gt_1 : ∀ c n : ℕ, c > 1 → n > 0 → c ^ n > 1 := by
+  intro c n hc hn
+  induction_from_starting_point n, hn with k hk IH
+  · have h : Nat.succ 0 = 1 := rfl
+    rw [h]
+    calc
+      c ^ 1 = c := by ring
+      _ > 1 := hc
+  calc
+    c ^ (k + 1) = c * c ^ k := by ring
+    _ > c * 1 := by rel [IH]
+    _ = c := by ring
+    _ > 1 := hc
+
 theorem pos_pow_gt_1 : ∀ n : ℕ, n > 0 → 1 < 2 ^ n := by
   intro n hn
-  induction_from_starting_point n, hn with k hk IH
-  · numbers
-  calc
-    2 ^ (k + 1) = 2 * 2 ^ k := by ring
-    _ > 2 * 1 := by rel [IH]
-    _ > 1 := by numbers
+  apply pow_c_n_gt_1
+  numbers
+  apply hn
 
 theorem pow_comp_lt : ∀ m n : ℕ, m < n → 2 ^ m < 2 ^ n := by
   intro m n h
