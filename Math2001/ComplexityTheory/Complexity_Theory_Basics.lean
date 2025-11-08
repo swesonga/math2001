@@ -965,12 +965,54 @@ theorem not_succ_is_pow_of_2_implies_log_succ_eq_log :
     ring
   contradiction
 
+/-
+lemma temp : ∀ n : ℕ, n ≥ 1 → n = n - 1 + 1 := by
+  intro n hn
+  induction_from_starting_point n, hn with k hk IH
+  · ring
+  -- interesting how rfl solves this (see Nat.succ_pred)
+  calc
+    k + (1 : ℤ) - 1 + 1 = (k - 1 + 1) + 1 := by rw [IH]
+    --k + 1 = (k - 1 + 1) + 1 := by rw [IH]
+-/
+
 theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
     ∀ n : ℕ, is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n + 1 := by
   intro n h
   obtain ⟨k, hn2⟩ := h
-  -- apply log_succ_eq_succ_log
-  sorry
+  -- apply log_succ_eq_succ_log at h
+  by_cases h : k = 0
+  · have h0 : n + 1 = 1 := calc
+      n + 1 = 2 ^ k := hn2
+      _ = 2 ^ 0 := by rw [h]
+      _ = 1 := by ring
+    have h1 : n = 0 := by
+      rw [Nat.add_eq_one_iff] at h0
+      obtain h0l | h0r := h0
+      · obtain ⟨h1, h2⟩ := h0l
+        apply h1
+      · obtain ⟨h1, h2⟩ := h0r
+        numbers at h2
+    rw [h1]
+    calc
+      Nat.log 2 (0 + 1) = Nat.log 2 1 := by ring
+      _ = 0 := by rfl
+      _ = Nat.log 2 0 + 1 := by sorry -- this is not true!!
+  have h1 : Nat.log 2 n = k - 1 := by
+    sorry
+  have h2 : k.pred.succ = k := by
+    apply Nat.succ_pred
+    apply h
+  have h3 : k - 1 + 1 = k := by
+    apply h2
+  calc
+    Nat.log 2 (n + 1) = Nat.log 2 (2 ^ k) := by rw [hn2]
+    _ = k := by
+      apply Nat.log_pow
+      numbers
+    _ = k - 1 + 1 := by
+      rw [h3] -- why doesn't apply h3 work?
+    _ = Nat.log 2 n + 1 := by rw [h1]
 
 theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
   (Nat.log 2 n) ^ 2 < n := by
@@ -1010,18 +1052,26 @@ theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 32 →
       sorry
     -/
     by_cases h2 : is_power_of_2' (k + 1)
-    · obtain ⟨c, h⟩ := h2
+    · -- h2 : is_power_of_2' (k + 1)
+      have ht : Nat.log 2 (k + 1) = Nat.log 2 k + 1 := by
+        apply succ_is_pow_of_2_implies_log_succ_eq_succ_log
+        apply h2
+      obtain ⟨c, h⟩ := h2
       have h3 : k < 2 ^ c := calc
         k < k + 1 := by extra
         _ = 2 ^ c := h
       rw [Nat.lt_pow_iff_log_lt] at h3
-      sorry
+      calc
+        Nat.log 2 (k + 1) ^ 2 = (Nat.log 2 k + 1) ^ 2 := by rw [ht]
+        _ = Nat.log 2 k ^ 2 + 2 * Nat.log 2 k + 1 := by ring
+        _ < k + 2 * Nat.log 2 k + 1 := by rel [IH]
       numbers
       apply ne_of_gt
       calc
           k ≥ 32 := hk
           _ > 0 := by numbers
-    · by_cases h3 : is_power_of_2' k
+    · -- h2 : ¬is_power_of_2' (k + 1)
+      by_cases h3 : is_power_of_2' k
       · rw [log_succ_eq_succ_log]
         calc
           Nat.log 2 k ^ 2 < k := IH
