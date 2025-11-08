@@ -253,6 +253,38 @@ theorem pow_comp : ∀ m n : ℕ, m ≤ n → 2 ^ m ≤ 2 ^ n := by
   | 0, n' + 1 =>
       apply pow_2_n_ge_1'
 
+theorem pos_pow_gt_1 : ∀ n : ℕ, n > 0 → 1 < 2 ^ n := by
+  intro n hn
+  induction_from_starting_point n, hn with k hk IH
+  · numbers
+  calc
+    2 ^ (k + 1) = 2 * 2 ^ k := by ring
+    _ > 2 * 1 := by rel [IH]
+    _ > 1 := by numbers
+
+theorem pow_comp_lt : ∀ m n : ℕ, m < n → 2 ^ m < 2 ^ n := by
+  intro m n h
+  match m, n with
+  | 0, 0 =>
+      numbers at h
+  | m' + 1, 0 =>
+      have ht : ¬ m' + 1 < 0 := by
+        apply succ_not_le_0
+      contradiction
+  | m' + 1, n' + 1 =>
+      have IHm := pow_comp_lt m' n'
+      have hmn : m' < n' := by addarith [h]
+      have ht : 2 ^ m' < 2 ^ n' := by
+        apply IHm
+        apply hmn
+      calc
+        2 ^ (m' + 1) = 2 * 2 ^ m' := by ring
+        _ < 2 * 2 ^ n' := by rel [ht]
+        _ = 2 ^ (n' + 1) := by ring
+  | 0, n' + 1 =>
+      apply pos_pow_gt_1
+      apply h
+
 /-
 theorem poly_comp : ∀ c m n : ℕ, (c > 0 ∧ m > 0 ∧ n > 0) → m ≤ n → m ^ c ≤ n ^ c := by
   intro c m n hpos hmn
