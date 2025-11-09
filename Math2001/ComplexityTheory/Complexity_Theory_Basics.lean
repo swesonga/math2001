@@ -1019,9 +1019,10 @@ lemma temp : ∀ n : ℕ, n ≥ 1 → n = n - 1 + 1 := by
     --k + 1 = (k - 1 + 1) + 1 := by rw [IH]
 -/
 
+-- TODO: consider stating this as k < n ∧ ¬ is_power_of_2' n ∧ is_power_of_2' (n + k) → Nat.log 2 (n + k) = Nat.log 2 n + 1
 theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
-    ∀ n : ℕ, is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n + 1 := by
-  intro n h
+    ∀ n : ℕ, n > 0 → is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n + 1 := by
+  intro n hn h
   obtain ⟨k, hn2⟩ := h
   -- apply log_succ_eq_succ_log at h
   by_cases h : k = 0
@@ -1036,11 +1037,19 @@ theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
         apply h1
       · obtain ⟨h1, h2⟩ := h0r
         numbers at h2
-    rw [h1]
+    have h_contra : ¬ n = 0 := by
+      apply ne_of_gt
+      apply hn
+    contradiction
+  have ha : Nat.log 2 n ≤ Nat.log 2 (n + 1) := by
+    apply Nat.log_mono_right
+    extra
+  have hb : k = Nat.log 2 (n + 1) := by
     calc
-      Nat.log 2 (0 + 1) = Nat.log 2 1 := by ring
-      _ = 0 := by rfl
-      _ = Nat.log 2 0 + 1 := by sorry -- this is not true!!
+      k = Nat.log 2 (2 ^ k) := by
+        rw [Nat.log_pow]
+        numbers
+      _ = Nat.log 2 (n + 1) := by rw [hn2]
   have h1 : Nat.log 2 n = k - 1 := by
     sorry
   have h2 : k.pred.succ = k := by
