@@ -1212,14 +1212,14 @@ theorem sq_log_2_n_lt_n_for_n_pow_2 : ∀ n : ℕ, n ≥ 5 →
     _ < 2 ^ k + 2 ^ k := by rel [h']
     _ = 2 ^ (k + 1) := by ring
 
-theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 17 →
+theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 31 →
   (Nat.log 2 n) ^ 2 < n := by
   intro n hn
   induction_from_starting_point n, hn with k hk IH
   · /-
     Next 2 lines suggested by Copilot with Claude Sonnet 4 agent
     -/
-    have h : Nat.log 2 17 = 4 := by rfl
+    have h : Nat.log 2 31 = 4 := by rfl
     rw [h]
     numbers
   · /-
@@ -1251,26 +1251,17 @@ theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 17 →
     -/
     by_cases h2 : is_power_of_2' (k + 1)
     · -- h2 : is_power_of_2' (k + 1)
-      have ht : Nat.log 2 (k + 1) = Nat.log 2 k + 1 := by
-        apply succ_is_pow_of_2_implies_log_succ_eq_succ_log
-        calc
-          k ≥ 17 := hk
-          _ > 0 := by numbers
-        apply h2
       obtain ⟨c, h⟩ := h2
-      have h3 : k < 2 ^ c := calc
-        k < k + 1 := by extra
-        _ = 2 ^ c := h
-      rw [Nat.lt_pow_iff_log_lt] at h3
-      calc
-        Nat.log 2 (k + 1) ^ 2 = (Nat.log 2 k + 1) ^ 2 := by rw [ht]
-        _ = Nat.log 2 k ^ 2 + 2 * Nat.log 2 k + 1 := by ring
-        _ < k + 2 * Nat.log 2 k + 1 := by rel [IH]
-      numbers
-      apply ne_of_gt
-      calc
-          k ≥ 32 := hk
-          _ > 0 := by numbers
+      rw [h]
+      apply sq_log_2_n_lt_n_for_n_pow_2
+      have ha : 2 ^ c ≥ 2 ^ 5 := calc
+        2 ^ c = k + 1 := by rw [h]
+        _ ≥ 32 := by addarith [hk]
+        _ = 2 ^ 5 := by ring
+      by_cases hb : c ≥ 5
+      · apply hb
+      apply lt_of_not_ge at hb
+      interval_cases c <;> numbers at ha
     · -- h2 : ¬is_power_of_2' (k + 1)
       by_cases h3 : is_power_of_2' k
       · rw [log_succ_eq_succ_log]
@@ -1278,7 +1269,7 @@ theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 17 →
           Nat.log 2 k ^ 2 < k := IH
           _ < k + 1 := by extra
         calc
-          k ≥ 17 := hk
+          k ≥ 31 := hk
           _ > 1 := by numbers
         apply h3
       · have h4 : Nat.log 2 (k + 1) = Nat.log 2 k := by
