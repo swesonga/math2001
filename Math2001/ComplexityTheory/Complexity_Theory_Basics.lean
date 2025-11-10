@@ -800,7 +800,7 @@ log_succ_eq_succ_log (above) shows this when n > 1 is a power of two
 
 The proof below should work for any base b > 1. Is it in the standard library?
 -/
-theorem log_unchanged_adding_smaller_num_to_pow_2 : ∀ m n : ℕ, n > 1 → m < n →
+theorem log_unchanged_adding_smaller_num_to_pow_2_wrong : ∀ m n : ℕ, n > 1 → m < n →
     is_power_of_2' n → Nat.log 2 (2 ^ n + m) = Nat.log 2 (2 ^ n) := by
   intro m n hn hmn h
   calc
