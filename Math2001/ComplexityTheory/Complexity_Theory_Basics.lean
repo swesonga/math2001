@@ -1019,16 +1019,28 @@ lemma temp : ∀ n : ℕ, n ≥ 1 → n = n - 1 + 1 := by
     --k + 1 = (k - 1 + 1) + 1 := by rw [IH]
 -/
 
+lemma my_sub_one_add_one : ∀ n : ℕ, n ≥ 1 → n - 1 + 1 = n := by
+  intro n hn
+  apply Nat.succ_pred_eq_of_ne_zero
+  dsimp
+  intro h
+  have h_contra : ¬ n = 0 := by
+    apply ne_of_gt
+    calc
+      0 < 1 := by numbers
+      _ ≤ n := hn
+  contradiction
+
 -- TODO: consider stating this as k < n ∧ ¬ is_power_of_2' n ∧ is_power_of_2' (n + k) → Nat.log 2 (n + k) = Nat.log 2 n + 1
 theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
     ∀ n : ℕ, n > 0 → is_power_of_2' (n + 1) → Nat.log 2 (n + 1) = Nat.log 2 n + 1 := by
   intro n hn h
   obtain ⟨k, hn2⟩ := h
   -- apply log_succ_eq_succ_log at h
-  by_cases h : k = 0
-  · have h0 : n + 1 = 1 := calc
-      n + 1 = 2 ^ k := hn2
-      _ = 2 ^ 0 := by rw [h]
+  by_cases h : k ≤ 1
+  · interval_cases k
+    have h0 : n + 1 = 1 := calc
+      n + 1 = 2 ^ 0 := hn2
       _ = 1 := by ring
     have h1 : n = 0 := by
       rw [Nat.add_eq_one_iff] at h0
@@ -1041,6 +1053,14 @@ theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
       apply ne_of_gt
       apply hn
     contradiction
+    have h0 : n + 1 = 2 := calc
+      n + 1 = 2 ^ 1 := hn2
+      _ = 2 := by ring
+    have h1 : n = 1 := by addarith [h0]
+    rw [h1]
+    have h2a : Nat.log 2 (1 + 1) = 1 := rfl
+    have h2b : Nat.log 2 1 + 1 = 1 := rfl
+    rw [h2a, h2b]
   have ha : Nat.log 2 n ≤ Nat.log 2 (n + 1) := by
     apply Nat.log_mono_right
     extra
@@ -1050,11 +1070,75 @@ theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
         rw [Nat.log_pow]
         numbers
       _ = Nat.log 2 (n + 1) := by rw [hn2]
-  have h1 : Nat.log 2 n = k - 1 := by
-    sorry
+  have h_k_gt_0 : k > 0 := by
+    apply Nat.gt_of_not_le at h
+    calc
+      k > 1 := h
+      _ > 0 := by numbers
+  have h_k_ge_2 : k ≥ 2 := by
+    --apply Nat.gt_of_not_le at h
+    apply Nat.ge_of_not_lt
+    intro h'
+    interval_cases k
+  have ht : k - 1 + 1 = k := by
+    apply my_sub_one_add_one
+    calc
+      k ≥ 2 := h_k_ge_2
+      _ ≥ 1 := by numbers
+  have hc : 2 ^ k = 2 ^ (k - 1) + 2 ^ (k - 1) := by
+    calc
+    /-
+      --2 ^ k = 2 * 2 ^ (k - 1) := by ring
+      2 ^ (k - 1 + 1) = 2 * 2 ^ (k - 1) := by ring
+      _ = 2 ^ (k - 1) + 2 ^ (k - 1) := by ring
+    -/
+      2 ^ k = 2 ^ (k - 1 + 1) := by rw [ht]
+      _ = 2 * 2 ^ (k - 1) := by ring
+      _ = 2 ^ (k - 1) + 2 ^ (k - 1) := by ring
+  have hd : n = 2 ^ (k - 1) + 2 ^ (k - 1) - 1 := by
+    calc
+      n = n + 1 - 1 := by
+        apply Nat.add_one_sub_one
+      _ = 2 ^ k - 1 := by rw [hn2]
+      _ = 2 ^ (k - 1) + 2 ^ (k - 1) - 1 := by rw [hc]
+  apply Nat.gt_of_not_le at h
+  have h_pred_k_gt_0 : k - 1 > 0 := calc
+    k - 1 ≥ 2 - 1 := by rel [h_k_ge_2]
+    _ > 0 := by numbers
+  have he' : 2 ^ (k - 1) > 1 := by
+    apply pos_pow_gt_1
+    apply h_pred_k_gt_0
+  have he : Nat.log 2 (2 ^ (k - 1) + (2 ^ (k - 1) - 1)) = Nat.log 2 (2 ^ (k - 1)) := by
+    apply log_unchanged_adding_smaller_num_to_pow_2'
+    apply pos_pow_gt_1
+    apply h_pred_k_gt_0
+    have hf : (2 ^ (k - 1)).pred < 2 ^ (k - 1) := by
+      apply Nat.pred_lt
+      apply ne_of_gt
+      calc
+       2 ^ (k - 1) > 1 := he'
+       _ > 0 := by numbers
+    apply hf
+    use k - 1
+    ring
+  /-
+  have he' : 2 ^ (k - 1) + 2 ^ (k - 1) - 1 = 2 ^ (k - 1) + (2 ^ (k - 1) - 1) := by
+    apply Nat.add_sub_assoc
+  -/
+  have h1 : Nat.log 2 n = k - 1 := calc
+    Nat.log 2 n = Nat.log 2 (2 ^ (k - 1) + 2 ^ (k - 1) - 1) := by rw [hd]
+    _ = Nat.log 2 (2 ^ (k - 1) + (2 ^ (k - 1) - 1)) := by
+          rw [Nat.add_sub_assoc]
+          apply pow_2_n_ge_1'
+    _ = Nat.log 2 (2 ^ (k - 1)) := he
+    _ = k - 1 := by
+      apply Nat.log_pow
+      numbers
   have h2 : k.pred.succ = k := by
     apply Nat.succ_pred
-    apply h
+    --apply h
+    apply ne_of_gt
+    apply h_k_gt_0
   have h3 : k - 1 + 1 = k := by
     apply h2
   calc
