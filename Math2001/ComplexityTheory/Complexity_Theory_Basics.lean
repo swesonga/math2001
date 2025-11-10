@@ -1150,6 +1150,68 @@ theorem succ_is_pow_of_2_implies_log_succ_eq_succ_log :
       rw [h3] -- why doesn't apply h3 work?
     _ = Nat.log 2 n + 1 := by rw [h1]
 
+-- TODO: generalize to a * x + b < 2 ^ x
+theorem n_plus_k_lt_2_pow_n : ∀ n : ℕ, n ≥ 3 → 2 * n + 1 < 2 ^ n := by
+  intro n hn
+  induction_from_starting_point n, hn with k hk IH
+  · numbers
+  · have ha : 2 ^ 3 ≤ 2 ^ k := by
+      apply pow_comp
+      apply hk
+    have hb : 2 ^ k > 2 := calc
+      2 ^ k ≥ 2 ^ 3 := ha
+      _ = 8 := by ring
+      _ > 2 := by numbers
+    calc
+      2 * (k + 1) + 1 = 2 * k + 1 + 2 := by ring
+      _ < 2 ^ k + 2 := by rel [IH]
+      _ < 2 ^ k + 2 ^ k := by rel [hb]
+      _ = 2 ^ (k + 1) := by ring
+
+/-
+theorem sq_log_2_n_lt_n_for_n_pow_2 : ∀ n : ℕ, n ≥ 32 → is_power_of_2' n →
+  (Nat.log 2 n) ^ 2 < n := by
+  intro n hn hn'
+  induction_from_starting_point n, hn with k hk IH
+  · have h : Nat.log 2 32 = 5 := rfl
+    rw [h]
+    numbers
+-/
+theorem sq_log_2_n_lt_n_for_n_pow_2 : ∀ n : ℕ, n ≥ 5 →
+  (Nat.log 2 (2 ^ n)) ^ 2 < 2 ^ n := by
+  intro n hn
+  induction_from_starting_point n, hn with k hk IH
+  · have h : Nat.log 2 (2 ^ 5) = 5 := by
+      apply Nat.log_pow
+      numbers
+    rw [h]
+    numbers
+  have IH' : k ^ 2 < 2 ^ k := calc
+    k ^ 2 = Nat.log 2 (2 ^ k) ^ 2 := by
+      rw [Nat.log_pow]
+      numbers
+    _ < 2 ^ k := IH
+  have h_2k_gt_1 : 2 * k > 1 := calc
+    2 * k ≥ 2 * 5 := by rel [hk]
+    _ > 1 := by numbers
+  have ha : 2 * k + 1 < 4 * k := calc
+    2 * k + 1 < 2 * k + 2 * k := by rel [h_2k_gt_1]
+    _ = 4 * k := by ring
+  have h' : 2 * k + 1 < 2 ^ k := by
+    apply n_plus_k_lt_2_pow_n
+    calc
+      k ≥ 5 := hk
+      _ ≥ 3 := by numbers
+  calc
+    Nat.log 2 (2 ^ (k + 1)) ^ 2 = (k + 1) ^ 2 := by
+      rw [Nat.log_pow]
+      numbers
+    _ = k ^ 2 + 2 * k + 1 := by ring
+    _ < 2 ^ k + 2 * k + 1 := by rel [IH']
+    _ = 2 ^ k + (2 * k + 1) := by ring
+    _ < 2 ^ k + 2 ^ k := by rel [h']
+    _ = 2 ^ (k + 1) := by ring
+
 theorem sq_log_2_n_lt_n : ∀ n : ℕ, n ≥ 17 →
   (Nat.log 2 n) ^ 2 < n := by
   intro n hn
