@@ -1391,14 +1391,71 @@ theorem pow_2_n_ge_pow_n_k5 : ∀ k n : ℕ, k ≥ 2 ∧ n ≥ 2 ^ k ^ 3 →
   rw [lt_or_lt_iff_ne] at ht7
   apply ht7
 
+lemma upper_bound_poly_n_using_power_of_2 : ∀ n k : ℕ,
+    n > 0 → k > 0 → n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
+  intro n k hn hk
+  have hn' : n < 2 ^ (Nat.log 2 n + 1) := by
+    apply Nat.lt_pow_succ_log_self
+    numbers
+  apply poly_comp_lt
+  constructor
+  · apply hk
+  · constructor
+    · apply hn
+    calc
+      2 ^ (Nat.log 2 n + 1) > n := hn'
+      _ > 0 := hn
+  apply hn'
+
 /-
 Use a power of 2 in the lower bound for n to simplify Nat.log arguments
 -/
-theorem pow_2_n_ge_pow_n_k4 : ∀ k : ℕ, k ≥ 2 → forall_sufficiently_large n : ℕ, n ^ k ≤ 2 ^ n := by
+theorem pow_2_n_ge_pow_n_k4 : ∀ k : ℕ, k ≥ 2 → forall_sufficiently_large n : ℕ, n ^ k < 2 ^ n := by
   intro k hk
   -- use (2 * k ^ 2)
   use 2 ^ (k ^ 2)
   intro n hn
+  /-
+  have ha : n < 2 ^ (Nat.log 2 n + 1) := by
+    apply Nat.lt_pow_succ_log_self
+    numbers
+  have hb : k - 1 > 0 := calc
+    k - 1 ≥ 2 - 1 := by rel [hk]
+    _ > 0 := by numbers
+  have hb' : n ^ k = n * n ^ (k - 1) := calc
+    n ^ k = n * n ^ (k - 1) := by ring
+  have hc : n ^ k < 2 ^ ((Nat.log 2 n + 1) * k) := calc
+    n ^ k = n * n ^ (k - 1) := hb'
+    _ < 2 ^ (Nat.log 2 n + 1) * n ^ (k - 1) := by rel [ha]
+    _ = 1 := by ring
+  -- why not just show hc as a separate lemma?
+  -- done in upper_bound_poly_n_using_power_of_2
+  -/
+  have h_k_gt_0 : k > 0 := calc
+    k ≥ 2 := hk
+    _ > 0 := by numbers
+  have hn' : n > 0 := calc
+    n ≥ 2 ^ (k ^ 2) := hn
+    _ ≥ 2 ^ (2 ^ 2) := by
+      apply pow_comp
+      apply poly_comp_le
+      constructor
+      · numbers
+      · constructor
+        · numbers
+        apply h_k_gt_0
+      apply hk
+    _ > 0 := by numbers
+  calc
+    n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
+      apply upper_bound_poly_n_using_power_of_2
+      apply hn'
+      apply h_k_gt_0
+    _ = 2 ^ ((Nat.log 2 n + 1) * k) := by ring
+    _ < 2 ^ n := by
+      apply pow_comp_lt
+      sorry
+  /-_
   rw [le_iff_eq_or_lt]
   by_cases h1 : n ^ k = 2 ^ n
   · left
@@ -1490,3 +1547,4 @@ theorem pow_2_n_ge_pow_n_k4 : ∀ k : ℕ, k ≥ 2 → forall_sufficiently_large
     apply ht7
     numbers
     apply ht7
+  -/
