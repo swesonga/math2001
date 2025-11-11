@@ -1497,6 +1497,14 @@ lemma succ_log_2_n_lt_n : ∀ n : ℕ,
     _ < k := IH
   apply Nat.lt_succ_self
 
+lemma c_log_2_n_plus_c_lt_sq_log_2_n : ∀ n c : ℕ,
+    n > 0 → forall_sufficiently_large n, (Nat.log 2 n) * c + c < (Nat.log 2 n) ^ 2 := by
+  intro n c hn
+  dsimp
+  use 2 ^ (c ^ 2)
+  intro x hx
+  sorry
+
 lemma upper_bound_poly_n_using_power_of_2 : ∀ n k : ℕ,
     n > 0 → k > 0 → n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
   intro n k hn hk
