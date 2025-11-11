@@ -1466,6 +1466,37 @@ lemma c_log_n_lt_n : ∀ n c : ℕ,
         _ ≥ 2 ^ 9 := hd
         _ ≥ 31 := by numbers
 
+lemma succ_log_2_n_lt_n : ∀ n : ℕ,
+    n > 2 → Nat.log 2 n + 1 < n := by
+  intro n hn
+  induction_from_starting_point n, hn with k hk IH
+  · have h1 : Nat.succ 2 = 3 := rfl
+    have h2 : Nat.log 2 3 = 1 := rfl
+    rw [h1, h2]
+    calc
+      1 + 1 = 2 := by ring
+      _ < 3 := by numbers
+  by_cases h : is_power_of_2' (k + 1)
+  · obtain ⟨k', h'⟩ := h
+    have h_k_gt_0 : k > 0 := calc
+      k ≥ 3 := hk
+      _ > 0 := by numbers
+    have h3 : Nat.log 2 (k + 1) = Nat.log 2 k + 1 := by
+      apply succ_is_pow_of_2_implies_log_succ_eq_succ_log
+      apply h_k_gt_0
+      use k'
+      apply h'
+    rw [h3]
+    calc
+      Nat.log 2 k + 1 + 1 = (Nat.log 2 k + 1 ) + 1 := by ring
+      _ < k + 1 := by rel [IH]
+  calc
+    Nat.log 2 (k + 1) + 1 = Nat.log 2 k + 1 := by
+      rw [not_succ_is_pow_of_2_implies_log_succ_eq_log]
+      apply h
+    _ < k := IH
+  apply Nat.lt_succ_self
+
 lemma upper_bound_poly_n_using_power_of_2 : ∀ n k : ℕ,
     n > 0 → k > 0 → n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
   intro n k hn hk
