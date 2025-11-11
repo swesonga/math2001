@@ -1382,6 +1382,90 @@ theorem pow_2_n_ge_pow_n_k5 : ∀ k n : ℕ, k ≥ 2 ∧ n ≥ 2 ^ k ^ 3 →
   rw [lt_or_lt_iff_ne] at ht7
   apply ht7
 
+-- more succinct proof than log_2_n_lt_n
+lemma log_2_n_lt_n' : ∀ n : ℕ,
+    n > 0 → Nat.log 2 n < n := by
+  intro n hn
+  calc
+    Nat.log 2 n < n := by
+      apply Nat.log_lt_of_lt_pow
+      apply ne_of_gt
+      apply hn
+      apply succ_n_lt_pow_2_succ_n
+
+lemma c_log_n_lt_n : ∀ n c : ℕ,
+    n > 0 → forall_sufficiently_large n : ℕ, (Nat.log 2 n) * c < n := by
+  intro n k hn
+  dsimp
+  by_cases h : k < 3
+  · interval_cases k
+    · use 2
+      intro x hx
+      calc
+        (Nat.log 2 x) * 0 = 0 := by ring
+        _ < 2 := by numbers
+        _ ≤ x := hx
+    · use 2
+      intro x hx
+      calc
+        (Nat.log 2 x) * 1 = Nat.log 2 x := by ring
+        _ < x := by
+          apply log_2_n_lt_n'
+          calc
+            x ≥ 2 := hx
+            _ > 0 := by numbers
+    · use 31 -- instead of 5 since sq_log_2_n_lt_n requires 31
+      intro x hx
+      have ha : Nat.log 2 31 ≤ Nat.log 2 x := by
+        apply Nat.log_monotone
+        apply hx
+      have hb : Nat.log 2 31 = 4 := rfl
+      rw [hb] at ha
+      have hc : 2 ≤ Nat.log 2 x := calc
+        2 ≤ 4 := by numbers
+        _ ≤ Nat.log 2 x := ha
+      calc
+        (Nat.log 2 x) * 2 ≤ Nat.log 2 x * Nat.log 2 x := by rel [hc]
+        _ = (Nat.log 2 x) ^ 2 := by ring
+        _ < x := by
+          apply sq_log_2_n_lt_n
+          apply hx
+  use 2 ^ (k ^ 2)
+  intro x hx
+  have ha : Nat.log 2 (2 ^ k ^ 2) ≤ Nat.log 2 x := by
+    apply Nat.log_monotone
+    apply hx
+    --rw [Nat.pow_le_iff_le_log]
+  have hb : Nat.log 2 (2 ^ k ^ 2) = k ^ 2 := by
+    apply Nat.log_pow
+    numbers
+  rw [hb] at ha
+  have h_3_le_k : 3 ≤ k := by
+    apply Nat.le_of_not_gt
+    apply h
+  have h_1_le_k : 1 ≤ k := calc
+    1 ≤ 3 := by numbers
+    _ ≤ k := h_3_le_k
+  have hc : k ≤ k ^ 2 := calc
+    k = k * 1 := by ring
+    _ ≤ k * k := by rel [h_1_le_k]
+    _ = k ^ 2 := by ring
+  have hd : 2 ^ (k ^ 2) ≥ 2 ^ 9 := by
+    apply pow_comp
+    calc
+      k ^ 2 = k * k := by ring
+      _ ≥ 3 * 3 := by rel [h_3_le_k]
+  calc
+    Nat.log 2 x * k ≤ Nat.log 2 x * k ^ 2 := by rel [hc]
+    _ ≤ Nat.log 2 x * Nat.log 2 x := by rel [ha]
+    _ = (Nat.log 2 x) ^ 2 := by ring
+    _ < x := by
+      apply sq_log_2_n_lt_n
+      calc
+        x ≥ 2 ^ (k ^ 2) := hx
+        _ ≥ 2 ^ 9 := hd
+        _ ≥ 31 := by numbers
+
 lemma upper_bound_poly_n_using_power_of_2 : ∀ n k : ℕ,
     n > 0 → k > 0 → n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
   intro n k hn hk
