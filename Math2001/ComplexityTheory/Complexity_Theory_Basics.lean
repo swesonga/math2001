@@ -1497,6 +1497,43 @@ lemma succ_log_2_n_lt_n : ∀ n : ℕ,
     _ < k := IH
   apply Nat.lt_succ_self
 
+lemma c_log_2_n_lt_sq_log_2_n : ∀ c : ℕ,
+    forall_sufficiently_large n, c > 0 → (Nat.log 2 n) * c < (Nat.log 2 n) ^ 2 := by
+  intro c
+  dsimp
+  use 2 ^ (c + 1) -- we need c < Nat.log 2 n
+  intro n hn hc
+  have h1 : 1 ≤ c := by
+    rw [Nat.succ_le_iff]
+    apply hc
+  have h2 : Nat.log 2 (2 ^ (c + 1)) ≤ Nat.log 2 n := by
+    apply Nat.log_monotone
+    apply hn
+  have h3 : Nat.log 2 (2 ^ (c + 1)) = (c + 1) := by
+    apply Nat.log_pow
+    numbers
+  rw [h3] at h2
+  apply Nat.lt_of_succ_le at h2
+  have h4 : n ≥ 4 := calc
+    n ≥ 2 ^ (c + 1) := hn
+    _ ≥ 2 ^ (1 + 1) := by
+      apply pow_comp
+      calc
+        1 + 1 ≤ c + 1 := by rel [h1]
+        _ = c + 1 := by ring
+  have h5 : 0 < Nat.log 2 n := by
+    by_cases ht : 0 < Nat.log 2 n
+    · apply ht
+    apply Nat.le_of_not_lt at ht
+    have h_contra : 1 < 0 := calc
+      1 ≤ c := h1
+      _ < Nat.log 2 n := h2
+      _ ≤ 0 := ht
+    numbers at h_contra
+  calc
+    Nat.log 2 n * c < Nat.log 2 n * Nat.log 2 n := by rel [h2]
+    _ = Nat.log 2 n ^ 2 := by ring
+
 lemma c_log_2_n_plus_c_lt_sq_log_2_n : ∀ c : ℕ,
     forall_sufficiently_large n, c > 0 → (Nat.log 2 n) * c + c < (Nat.log 2 n) ^ 2 := by
   intro c
