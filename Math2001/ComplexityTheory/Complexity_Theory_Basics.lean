@@ -1497,6 +1497,62 @@ lemma succ_log_2_n_lt_n : ∀ n : ℕ,
     _ < k := IH
   apply Nat.lt_succ_self
 
+/- -- Compare this first attempt to the proof below it
+lemma c_log_2_n_lt_sq_log_2_n : ∀ n k : ℕ,
+    n > 0 → forall_sufficiently_large n : ℕ, (Nat.log 2 n) * k < (Nat.log 2 n) ^ 2 := by
+  intro n k hn
+  dsimp
+  by_cases h : k < 1
+  · interval_cases k
+    use 2
+    intro x hx
+    have h1 : Nat.log 2 2 ≤ Nat.log 2 x := by
+      apply Nat.log_monotone
+      apply hx
+    have h2 : Nat.log 2 2 = 1 := rfl
+    rw [h2] at h1
+    calc
+      Nat.log 2 x * 0 = 0 := by ring
+      _ < 1 := by numbers
+      _ ≤ Nat.log 2 x := h1
+      _ = Nat.log 2 x * 1 := by ring
+      _ ≤ Nat.log 2 x * Nat.log 2 x := by rel [h1]
+      _ = (Nat.log 2 x) ^ 2 := by ring
+  use 2 ^ (k ^ 2 + 1)
+  intro x hx
+  --induction_from_starting_point x, hx with k' hk' IH
+  /-
+  by_cases h : k < 1
+  · interval_cases k
+    have h1 : x ≥ 2 := calc
+      x ≥ 2 ^ (0 ^ 2 + 1) := hx
+      _ = 2 ^ 1 := by ring
+      _ = 2 := by ring
+    have ha : Nat.log 2 (2 ^ (0 ^ 2 + 1)) ≤ Nat.log 2 x := by
+      apply Nat.log_monotone
+      apply hx
+    have hb : Nat.log 2 (2 ^ (0 ^ 2 + 1)) = 0 ^ 2 + 1 := by
+      apply Nat.log_pow
+      numbers
+    rw [hb] at ha
+    have hc : 1 ≤ Nat.log 2 x := by
+      calc
+        1 = 0 ^ 2 + 1 := by ring
+        _ ≤ Nat.log 2 x := ha
+    calc
+      Nat.log 2 x * 0 = 0 := by ring
+      _ < 0 ^ 2 + 1 := by numbers
+      _ ≤ Nat.log 2 x := ha
+      _ = Nat.log 2 x * 1 := by ring
+      _ ≤ Nat.log 2 x * Nat.log 2 x := by rel [hc]
+      _ = (Nat.log 2 x) ^ 2 := by ring
+  -/
+  have h' : 1 ≤ k := by
+    apply le_of_not_lt
+    apply h
+  induction_from_starting_point x, hx with k' hk' IH
+-/
+
 lemma c_log_2_n_lt_sq_log_2_n : ∀ c : ℕ,
     forall_sufficiently_large n, c > 0 → (Nat.log 2 n) * c < (Nat.log 2 n) ^ 2 := by
   intro c
