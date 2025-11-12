@@ -1990,3 +1990,79 @@ theorem pow_2_n_ge_pow_n_k4 : ∀ k : ℕ, k ≥ 2 → forall_sufficiently_large
     numbers
     apply ht7
   -/
+
+lemma c_succ_log_2_n_lt_sq_log_2_n_lt_pow_2_n : ∀ c : ℕ,
+    forall_sufficiently_large n, (Nat.log 2 n + 1) * c < (Nat.log 2 n) ^ 2 ∧ (Nat.log 2 n) ^ 2 < n := by
+  intro c
+  have h1 := c_succ_log_2_n_lt_sq_log_2_n c
+  have h2 := sq_log_2_n_lt_n
+  dsimp at h1
+  obtain ⟨C, h1⟩ := h1
+  use C + 31
+  intro n hn
+  constructor
+  · apply h1
+    calc
+      n ≥ C + 31 := hn
+      _ ≥ C := by extra
+  apply h2
+  calc
+    n ≥ C + 31 := hn
+    _ ≥ 31 := by extra
+
+theorem poly_n_lt_pow_2_n_ : ∀ k : ℕ, forall_sufficiently_large n : ℕ, n ^ k < 2 ^ n := by
+  intro k
+  dsimp
+  by_cases hk : k ≤ 1
+  · -- hk : k ≤ 1
+    interval_cases k
+    · use 1
+      intro n hn
+      calc
+        n ^ 0 = 1 := by ring
+        _ < 2 ^ 1 := by numbers
+        _ ≤ 2 ^ n := by
+          apply pow_comp
+          apply hn
+    use 1
+    intro n hn
+    calc
+        n ^ 1 = n := by ring
+        _ < 2 ^ n := by
+          apply succ_n_lt_pow_2_succ_n
+  -- hk : ¬k ≤ 1
+  apply Nat.gt_of_not_le at hk
+  have h := c_succ_log_2_n_lt_sq_log_2_n_lt_pow_2_n k
+  dsimp at h
+  obtain ⟨C, h⟩ := h
+  use C
+  intro n hn
+  have h0 : (Nat.log 2 n + 1) * k < Nat.log 2 n ^ 2 ∧ Nat.log 2 n ^ 2 < n := by
+    apply h
+    apply hn
+  obtain ⟨h1, h2⟩ := h0
+  by_cases hn' : n ≤ 0
+  · interval_cases n
+    calc
+      0 ^ k = 0 := by
+        apply Nat.zero_pow
+        calc
+          k > 1 := hk
+          _ > 0 := by numbers
+      _ < 2 ^ 0 := by numbers
+  apply Nat.gt_of_not_le at hn'
+  have h_k_gt_0 : k > 0 := calc
+    k > 1 := hk
+    _ > 0 := by numbers
+  calc
+    n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
+      apply upper_bound_poly_n_using_power_of_2
+      apply hn'
+      apply h_k_gt_0
+    _ = 2 ^ ((Nat.log 2 n + 1) * k) := by ring
+    _ < 2 ^ (Nat.log 2 n ^ 2) := by
+      apply pow_comp_lt
+      apply h1
+    _ < 2 ^ n := by
+      apply pow_comp_lt
+      apply h2
