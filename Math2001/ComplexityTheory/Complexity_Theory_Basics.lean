@@ -1663,15 +1663,39 @@ lemma diff_of_squares_succ_pred : ∀ n : ℕ,
     _ = n ^ 2 - 1 := by ring
   -/
 
--- TODO: remove the c > 0 hypothesis
 lemma c_succ_log_2_n_lt_sq_log_2_n : ∀ c : ℕ,
-    forall_sufficiently_large n, c > 0 → (Nat.log 2 n + 1) * c < (Nat.log 2 n) ^ 2 := by
+    forall_sufficiently_large n, (Nat.log 2 n + 1) * c < (Nat.log 2 n) ^ 2 := by
   intro c
   dsimp
+  by_cases hc : c ≤ 0
+  · interval_cases c
+    use 2
+    intro n hn
+    have ha : Nat.log 2 2 = 1 := rfl
+    have hb : Nat.log 2 2 ≤ Nat.log 2 n := by
+      apply Nat.log_monotone
+      apply hn
+    have hc : (Nat.log 2 2) ^ 2 ≤ (Nat.log 2 n) ^ 2 := by
+      apply poly_comp_le
+      constructor
+      · numbers
+      · constructor
+        · rw [ha]
+          numbers
+        calc
+          Nat.log 2 n ≥ Nat.log 2 2 := hb
+          _ = 1 := ha
+      apply hb
+    rw [ha] at hc
+    calc
+      (Nat.log 2 n + 1) * 0 = 0 := by ring
+      _ < 1 ^ 2 := by numbers
+      _ ≤ Nat.log 2 n ^ 2 := hc
   use 2 ^ (c + 2) -- we need c < Nat.log 2 n - 1, so cool how this works!
-  intro n hn hc
+  intro n hn
   have h1 : 1 ≤ c := by
     rw [Nat.succ_le_iff]
+    apply Nat.lt_of_not_le at hc
     apply hc
   have h2 : Nat.log 2 (2 ^ (c + 2)) ≤ Nat.log 2 n := by
     apply Nat.log_monotone
@@ -1714,22 +1738,20 @@ lemma c_succ_log_2_n_lt_sq_log_2_n : ∀ c : ℕ,
         _ ≥ 3 ^ 2 := by rel [h4]
         _ > 0 := by numbers
 
--- TODO: remove the c > 0 hypothesis
 lemma c_log_2_n_plus_c_lt_sq_log_2_n : ∀ c : ℕ,
-    forall_sufficiently_large n, c > 0 → (Nat.log 2 n) * c + c < (Nat.log 2 n) ^ 2 := by
+    forall_sufficiently_large n, (Nat.log 2 n) * c + c < (Nat.log 2 n) ^ 2 := by
   intro c
   dsimp
   have h := c_succ_log_2_n_lt_sq_log_2_n c
   dsimp at h
   obtain ⟨C, h⟩ := h
   use C
-  intro n hn hc
+  intro n hn
   calc
     ((Nat.log 2 n) * c) + c = (Nat.log 2 n + 1) * c := by ring
     _ < Nat.log 2 n ^ 2 := by
       apply h
       apply hn
-      apply hc
 
 lemma upper_bound_poly_n_using_power_of_2 : ∀ n k : ℕ,
     n > 0 → k > 0 → n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
