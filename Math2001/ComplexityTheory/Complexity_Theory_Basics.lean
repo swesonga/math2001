@@ -211,6 +211,7 @@ theorem pow_comp : ∀ m n : ℕ, 2 ^ m ≥ 2 ^ n → m ≥ n := by
   | m', n' + 1 =>
 -/
 
+-- This is Nat.succ_pos'
 theorem succ_gt_0 : ∀n : ℕ, n + 1 > 0 := by
   intro n
   calc
