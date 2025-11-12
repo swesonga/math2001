@@ -1590,11 +1590,146 @@ lemma c_log_2_n_lt_sq_log_2_n : ∀ c : ℕ,
     Nat.log 2 n * c < Nat.log 2 n * Nat.log 2 n := by rel [h2]
     _ = Nat.log 2 n ^ 2 := by ring
 
+/-
+lemma my_add_one_sub_one : ∀ n : ℕ,
+    n + 1 - 1 = (n + 1) - 1 := by
+  intro n
+  ring
+-/
+
+lemma quadratic_pred_succ : ∀ n : ℕ,
+    n ^ 2 - n + (n - 1) = n ^ 2 - n + n - 1 := by
+  intro n
+  simple_induction n with k IH
+  · dsimp
+    rfl
+  /-
+  have h : k + 1 - 1 = (k + 1) - 1 := by
+    ring -- apply my_add_one_sub_one
+  rw [h]
+  -/
+  calc
+    -- (k + 1) ^ 2 - (k + 1) + (k + 1 - 1) = (k + 1) ^ 2 - (k + 1) + ((k + 1) - 1) := by rw [h]
+    (k + 1) ^ 2 - (k + 1) + (k + 1 - 1) = (k + 1) ^ 2 - (k + 1) + (k + 1) - 1 := by
+      apply Nat.pred_succ
+
+/-
+lemma quadratic_thing2 : ∀ m n : ℕ,
+    m - n + (n - 1) = m - n + n - 1 := by
+  intro m n
+  apply Nat.pred_succ
+  calc
+    m - n + (n - 1) = m - (n + 1) + (n + 1) - 1 := by
+      apply Nat.pred_succ
+-/
+
+lemma diff_of_squares_succ_pred : ∀ n : ℕ,
+    n ^ 2 - 1 = (n + 1) * (n - 1) := by
+  intro n
+  by_cases h : n ≤ 0
+  · interval_cases n
+    calc
+      0 ^ 2 - 1 = 0 * 0 - 1 := by ring
+      _ = 0 := by ring
+  apply Nat.gt_of_not_le at h
+  have ha : n * (n - 1) = n * n - n:= by
+    apply Nat.mul_pred_right
+  have h2 : (n + 1) * (n - 1) = n ^ 2 - 1 := calc
+    (n + 1) * (n - 1) = n * (n - 1) + 1 * (n - 1) := by ring
+    _ = n * n - n + 1 * (n - 1) := by rw [ha]
+    _ = n * n - n + (n - 1) := by ring
+    _ = n ^ 2 - n + (n - 1) := by ring
+    _ = (n ^ 2 - n + n) - 1 := by rw [quadratic_pred_succ]
+    _ = n ^ 2 - 1 := by
+      --rw [Nat.pred_succ]
+      rw [Nat.sub_add_cancel]
+      calc
+        n = n ^ 1 := by ring
+        _ ≤ n ^ 2 := by
+          apply pow_le_of_exp_le
+          apply h
+          numbers
+  rw [h2]
+  /-
+  calc
+    /-
+    (n + 1) * (n - 1) = n * (n - 1) + 1 * (n - 1) := by ring
+    _ = n * n - n * 1 + 1 * (n - 1) := by ring
+    _ = n * n - n * 1 + n - 1 := by ring
+    -/
+    (n + 1) * (n - 1) = n * n - n * 1 + n - 1 := by ring
+    _ = n ^ 2 - n * 1 + n - 1 := by ring
+    _ = (n ^ 2 - n + n) - 1 := by ring
+    _ = n ^ 2 - 1 := by ring
+  -/
+
+-- TODO: remove the c > 0 hypothesis
+lemma c_succ_log_2_n_lt_sq_log_2_n : ∀ c : ℕ,
+    forall_sufficiently_large n, c > 0 → (Nat.log 2 n + 1) * c < (Nat.log 2 n) ^ 2 := by
+  intro c
+  dsimp
+  use 2 ^ (c + 2) -- we need c < Nat.log 2 n - 1, so cool how this works!
+  intro n hn hc
+  have h1 : 1 ≤ c := by
+    rw [Nat.succ_le_iff]
+    apply hc
+  have h2 : Nat.log 2 (2 ^ (c + 2)) ≤ Nat.log 2 n := by
+    apply Nat.log_monotone
+    apply hn
+  have h3 : Nat.log 2 (2 ^ (c + 2)) = (c + 2) := by
+    apply Nat.log_pow
+    numbers
+  rw [h3] at h2
+  have h4 : Nat.log 2 n ≥ 3 := calc
+    Nat.log 2 n ≥ c + 2 := h2
+    _ ≥ 1 + 2 := by rel [h1]
+    _ = 3 := by numbers
+  apply Nat.lt_of_succ_le at h2
+  apply Nat.lt_pred_of_succ_lt at h2
+  have h5 : c < Nat.log 2 n - 1 := by
+    apply h2
+  /-
+  have h6 : Nat.log 2 n ^ 2 - 1 + 1 = Nat.log 2 n ^ 2 := by
+    apply Nat.succ_pred
+    apply ne_of_gt
+    calc
+      Nat.sub (Nat.log 2 n ^ 2) 0 = (Nat.log 2 n ^ 2) := by
+        apply Nat.sub_zero
+      _ ≥ 3 ^ 2 := by rel [h4]
+      _ > 0 := by numbers
+  -/
+  calc
+    (Nat.log 2 n + 1) * c < (Nat.log 2 n + 1) * (Nat.log 2 n - 1) := by rel [h5]
+    --_ = (Nat.log 2 n) * Nat.log 2 n - (1 * Nat.log 2 n) + 1 * (Nat.log 2 n) - 1 * 1 := by ring
+    -- went to rename diff_of_squares_succ_pred to mul_succ_pred then found
+    -- Nat.mul_self_sub_mul_self_eq. TODO: remove diff_of_squares_succ_pred
+    _ = (Nat.log 2 n) ^ 2 - 1 := by rw [diff_of_squares_succ_pred]
+    _ < Nat.log 2 n ^ 2 - 1 + 1 := by extra
+    _ = Nat.log 2 n ^ 2 := by
+      apply Nat.succ_pred
+      apply ne_of_gt
+      calc
+        Nat.sub (Nat.log 2 n ^ 2) 0 = (Nat.log 2 n ^ 2) := by
+          apply Nat.sub_zero
+        _ ≥ 3 ^ 2 := by rel [h4]
+        _ > 0 := by numbers
+
+-- TODO: remove the c > 0 hypothesis
 lemma c_log_2_n_plus_c_lt_sq_log_2_n : ∀ c : ℕ,
     forall_sufficiently_large n, c > 0 → (Nat.log 2 n) * c + c < (Nat.log 2 n) ^ 2 := by
   intro c
   dsimp
-  sorry
+  have h := c_succ_log_2_n_lt_sq_log_2_n c
+  dsimp at h
+  obtain ⟨C, h⟩ := h
+  use C
+  intro n hn hc
+  calc
+    ((Nat.log 2 n) * c) + c = (Nat.log 2 n + 1) * c := by ring
+    _ < Nat.log 2 n ^ 2 := by
+      apply h
+      apply hn
+      apply hc
 
 lemma upper_bound_poly_n_using_power_of_2 : ∀ n k : ℕ,
     n > 0 → k > 0 → n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
