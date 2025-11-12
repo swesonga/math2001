@@ -1753,6 +1753,86 @@ lemma c_log_2_n_plus_c_lt_sq_log_2_n : ∀ c : ℕ,
       apply h
       apply hn
 
+lemma k_log_2_n_plus_c_lt_sq_log_2_n : ∀ c k : ℕ,
+    forall_sufficiently_large n : ℕ, (Nat.log 2 n) * k + c < (Nat.log 2 n) ^ 2 := by
+  intro c k
+  dsimp
+  by_cases hkc : k < c
+  · -- hkc : k < c
+    have h := c_log_2_n_plus_c_lt_sq_log_2_n c
+    /-
+    have ha : c > 0 := by
+      apply Nat.zero_lt_of_lt
+      apply hkc
+    -/
+    dsimp at h
+    obtain ⟨C, h⟩ := h
+    use C
+    intro x hx
+    have hb : Nat.log 2 x * c + c < Nat.log 2 x ^ 2 := by
+      apply h
+      apply hx
+    calc
+      Nat.log 2 x * k + c ≤ Nat.log 2 x * c + c := by rel [hkc]
+      _ < (Nat.log 2 x) ^ 2 := hb
+    /-
+
+    by_cases hc : Nat.log 2 x = 0
+    · rw [hc] at hb
+      have h_bad : c < 0 := calc
+        c = 0 * c + c := by ring
+        _ < 0 ^ 2 := hb
+        _ = 0 := by ring
+      --
+    have h2 := c_log_2_n_plus_c_lt_sq_log_2_n c
+    obtain ⟨C2, h2⟩ := h2
+    dsimp at h2
+    calc
+      Nat.log 2 x * k + c < Nat.log 2 x * c + c := by rel [hkc]
+      _ < (Nat.log 2 x) ^ 2 := by
+        apply h2
+        apply hx
+    -/
+  -- hkc : ¬ k < c
+  by_cases hck : c < k
+  · -- hck : c < k
+    have h := c_log_2_n_plus_c_lt_sq_log_2_n k
+    apply Nat.ge_of_not_lt at hkc
+    /-
+    have ha : k > 0 := by
+      apply Nat.zero_lt_of_lt
+      apply hck
+    -/
+    dsimp at h
+    obtain ⟨C, h⟩ := h
+    use C
+    intro x hx
+    have hb : Nat.log 2 x * k + k < Nat.log 2 x ^ 2 := by
+      apply h
+      apply hx
+    calc
+      Nat.log 2 x * k + c ≤ Nat.log 2 x * k + k := by rel [hkc]
+      _ < (Nat.log 2 x) ^ 2 := hb
+  -- hkc : k = c
+  have hkc_eq : k = c := by
+    apply Nat.ge_of_not_lt at hkc
+    apply Nat.ge_of_not_lt at hck
+    rw [Nat.eq_iff_le_and_ge]
+    constructor
+    apply hck
+    apply hkc
+  have h := c_log_2_n_plus_c_lt_sq_log_2_n k
+  dsimp at h
+  obtain ⟨C, h⟩ := h
+  use C
+  intro x hx
+  have hb : Nat.log 2 x * k + k < Nat.log 2 x ^ 2 := by
+    apply h
+    apply hx
+  calc
+    Nat.log 2 x * k + c = Nat.log 2 x * k + k := by rw [hkc_eq]
+    _ < (Nat.log 2 x) ^ 2 := hb
+
 lemma upper_bound_poly_n_using_power_of_2 : ∀ n k : ℕ,
     n > 0 → k > 0 → n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
   intro n k hn hk
