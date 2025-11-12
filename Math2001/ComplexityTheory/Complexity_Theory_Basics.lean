@@ -509,7 +509,7 @@ Nat.log 2 k returns ⌊log_2(k)⌋
 TODO: proove this for:
 theorem pow_2_n_ge_pow_n_k : ∀ k : ℕ, forall_sufficiently_large n : ℕ, 2 ^ n ≥ (2 ^ (Nat.log 2 n)) ^ k := by
 -/
-theorem pow_2_n_ge_pow_n_k : ∀ k : ℕ, forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ k := by
+theorem pow_2_n_ge_pow_n_k_orig : ∀ k : ℕ, forall_sufficiently_large n : ℕ, 2 ^ n ≥ n ^ k := by
   dsimp
   intro k
   /-
