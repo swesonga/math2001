@@ -1850,6 +1850,138 @@ lemma upper_bound_poly_n_using_power_of_2 : ∀ n k : ℕ,
       _ > 0 := hn
   apply hn'
 
+lemma succ_log_2_n_plus_k_lt_sq_log_2_n_lt_n : ∀ k : ℕ,
+    forall_sufficiently_large n, Nat.log 2 n + k < (Nat.log 2 n) ^ 2 ∧ (Nat.log 2 n) ^ 2 < n := by
+  intro k
+  by_cases h1 : k ≤ 0
+  · -- h1 : k ≤ 0
+    have h := c_succ_log_2_n_lt_sq_log_2_n 0
+    have h2 := sq_log_2_n_lt_n
+    dsimp at *
+    obtain ⟨C, h⟩ := h
+    interval_cases k
+    use C + 31
+    intro n hn
+    /-
+    We need C + 1 instead of C to show that n > 0
+    We need C + 2 to show that n > 1
+    We need C + 31 to satisfy the hypothesis of sq_log_2_n_lt_n
+    -/
+    have h_n_gt_0 : n > 0 := calc
+      n ≥ C + 31 := hn
+      _ ≥ 1 := by extra
+      _ > 0 := by numbers
+    have h_n_gt_1 : n > 1 := calc
+      n ≥ C + 31 := hn
+      _ > 1 := by extra
+    have h_log_4_eq_2 : Nat.log 2 (2 ^ 2) = 2 := by
+      apply Nat.log_pow
+      numbers
+    have h_log_n_ge_2 : Nat.log 2 n ≥ 2 := calc
+      2 = Nat.log 2 (2 ^ 2) := by rw [h_log_4_eq_2]
+      _ ≤ Nat.log 2 n := by
+        apply Nat.log_monotone
+        --apply gt_of_gt_of_ge at h_n_gt_1
+        /-
+        --apply Nat.succ_le_of_lt
+        --dsimp
+        -/
+        calc
+          2 ^ 2 = 4 := by ring
+          _ ≤ C + 31 := by extra
+          _ ≤ n := hn
+    constructor
+    · calc
+        Nat.log 2 n + 0 = Nat.log 2 n := by ring
+          _ = Nat.log 2 n ^ 1 := by ring
+          _ < Nat.log 2 n ^ 2 := by
+            apply pow_lt_of_exp_lt
+            apply Nat.lt_of_succ_le
+            apply h_log_n_ge_2
+            numbers
+    apply h2
+    calc
+      n ≥ C + 31 := hn
+      _ ≥ 31 := by extra
+  -- h1 : ¬ k ≤ 0
+  have h := c_succ_log_2_n_lt_sq_log_2_n k
+  have h2 := sq_log_2_n_lt_n
+  dsimp at *
+  obtain ⟨C, h⟩ := h
+  use C + 31
+  intro n hn
+  -- We need C + 1 instead of C to show that n > 0
+  have h_n_gt_0 : n > 0 := calc
+    n ≥ C + 31 := hn
+    _ ≥ 1 := by extra
+    _ > 0 := by numbers
+  constructor
+  · /-
+    by_cases h1 : k ≤ 0
+    -- h1 : k ≤ 0
+    interval_cases k
+    have ha := c_succ_log_2_n_lt_sq_log_2_n 1
+    obtain ⟨Ca, ha⟩ := ha
+    dsimp at ha
+    /-
+    calc
+      Nat.log 2 n + 0 = Nat.log 2 n * 1 := by ring
+      _ < Nat.log 2 n * 1 + 1 := by extra
+      _ = (Nat.log 2 n + 1) * 1 := by ring
+      _ < Nat.log 2 n ^ 2 := by
+        apply ha
+        apply h_n_gt_0
+    -/
+    -/
+    -- h1 : ¬ k ≤ 0
+    apply Nat.lt_of_not_le at h1
+    apply Nat.succ_le_of_lt at h1
+    have hk : 1 ≤ k := by
+      apply h1
+    calc
+      Nat.log 2 n + k = Nat.log 2 n * 1 + k := by ring
+        _ ≤ Nat.log 2 n * k + k := by rel [hk]
+        _ = (Nat.log 2 n + 1) * k := by ring
+        _ < Nat.log 2 n ^ 2 := by
+          apply h
+          calc
+            n ≥ C + 31 := hn
+            _ ≥ C := by extra
+  · /-
+    interval_cases k
+    constructor
+    calc
+      Nat.log 2 n + 0 = Nat.log 2 n := by ring
+      _ < Nat.log 2 n ^ 2 := by
+        apply h2
+        apply h_n_gt_0
+    calc
+      Nat.log 2 n + 0 = Nat.log 2 n := by ring
+      _ < n := by
+        apply log_2_n_lt_n'
+        apply h_n_gt_0
+    -/
+    apply h2
+    calc
+      n ≥ C + 31 := hn
+      _ ≥ 31 := by extra
+
+lemma log_2_n_plus_k_lt_n : ∀ k : ℕ,
+    forall_sufficiently_large n, Nat.log 2 n + k < n := by
+  intro k
+  have h := succ_log_2_n_plus_k_lt_sq_log_2_n_lt_n k
+  dsimp at *
+  obtain ⟨C, h⟩ := h
+  use C
+  intro n hn
+  have h2 : Nat.log 2 n + k < Nat.log 2 n ^ 2 ∧ Nat.log 2 n ^ 2 < n := by
+    apply h
+    apply hn
+  obtain ⟨hl, hr⟩ := h2
+  calc
+    Nat.log 2 n + k < Nat.log 2 n ^ 2 := hl
+    _ < n := hr
+
 lemma c_succ_log_2_n_lt_sq_log_2_n_lt_pow_2_n : ∀ c : ℕ,
     forall_sufficiently_large n, (Nat.log 2 n + 1) * c < (Nat.log 2 n) ^ 2 ∧ (Nat.log 2 n) ^ 2 < n := by
   intro c
