@@ -2071,3 +2071,50 @@ theorem poly_n_lt_pow_2_n : ∀ k : ℕ, forall_sufficiently_large n : ℕ, n ^ 
     _ < 2 ^ n := by
       apply pow_comp_lt
       apply h2
+
+theorem poly_n_lt_pow_2_n' : ∀ k : ℕ, forall_sufficiently_large n : ℕ, n ^ k < 2 ^ n := by
+  intro k
+  dsimp
+  by_cases hk : k ≤ 1
+  · -- hk : k ≤ 1
+    interval_cases k
+    · use 1
+      intro n hn
+      calc
+        n ^ 0 = 1 := by ring
+        _ < 2 ^ 1 := by numbers
+        _ ≤ 2 ^ n := by
+          apply pow_comp
+          apply hn
+    use 1
+    intro n hn
+    calc
+        n ^ 1 = n := by ring
+        _ < 2 ^ n := by
+          apply succ_n_lt_pow_2_succ_n
+  -- hk : ¬k ≤ 1
+  apply Nat.gt_of_not_le at hk
+  have h := c_succ_log_2_n_lt_n k
+  dsimp at h
+  obtain ⟨C, h⟩ := h
+  use C + 1 -- we need n > 0 in this proof
+  intro n hn
+  have h_k_gt_0 : k > 0 := calc
+    k > 1 := hk
+    _ > 0 := by numbers
+  have h_n_gt_0 : n > 0 := calc
+    n ≥ C + 1 := hn
+    _ ≥ 1 := by extra
+    _ > 0 := by numbers
+  calc
+    n ^ k < (2 ^ (Nat.log 2 n + 1)) ^ k := by
+      apply upper_bound_poly_n_using_power_of_2
+      apply h_n_gt_0
+      apply h_k_gt_0
+    _ = 2 ^ ((Nat.log 2 n + 1) * k) := by ring
+    _ < 2 ^ n := by
+      apply pow_comp_lt
+      apply h
+      calc
+        n ≥ C + 1 := hn
+        _ ≥ C := by extra
