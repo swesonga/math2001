@@ -2001,7 +2001,7 @@ lemma c_succ_log_2_n_lt_sq_log_2_n_lt_pow_2_n : ∀ c : ℕ,
     n ≥ C + 31 := hn
     _ ≥ 31 := by extra
 
-theorem poly_n_lt_pow_2_n_ : ∀ k : ℕ, forall_sufficiently_large n : ℕ, n ^ k < 2 ^ n := by
+theorem poly_n_lt_pow_2_n : ∀ k : ℕ, forall_sufficiently_large n : ℕ, n ^ k < 2 ^ n := by
   intro k
   dsimp
   by_cases hk : k ≤ 1
