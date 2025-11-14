@@ -2001,6 +2001,20 @@ lemma c_succ_log_2_n_lt_sq_log_2_n_lt_pow_2_n : ∀ c : ℕ,
     n ≥ C + 31 := hn
     _ ≥ 31 := by extra
 
+lemma c_succ_log_2_n_lt_n : ∀ c : ℕ,
+    forall_sufficiently_large n, (Nat.log 2 n + 1) * c < n := by
+  intro k
+  have h := c_succ_log_2_n_lt_sq_log_2_n_lt_pow_2_n k
+  obtain ⟨C, h⟩ := h
+  dsimp at *
+  use C
+  intro n hn
+  have h' := h n hn
+  have ⟨hl, hr⟩ := h'
+  calc
+    (Nat.log 2 n + 1) * k < Nat.log 2 n ^ 2 := hl
+    _ < n := hr
+
 theorem poly_n_lt_pow_2_n : ∀ k : ℕ, forall_sufficiently_large n : ℕ, n ^ k < 2 ^ n := by
   intro k
   dsimp
