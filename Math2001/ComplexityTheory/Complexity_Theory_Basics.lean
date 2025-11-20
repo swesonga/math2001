@@ -4,7 +4,6 @@ import Mathlib.Order.Basic
 import Mathlib.Data.Nat.Log
 -- TODO: Remove Heather's dependencies
 import Library.Basic
-import Library.Tactic.ModEq
 
 #eval (0: ℕ) ^ 0
 
